@@ -1,0 +1,63 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::Area_CRUD" (
+in areaCode VARCHAR(15),in areaDesc VARCHAR(80),
+in distCode VARCHAR(15),  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+    IF(:Command_type = 'INSERT')
+        THEN
+        INSERT INTO "MDB_DEV"."MST_AREA" ("AREA_CODE","AREA_DESC","DISTRICT_CODE") VALUES(:areaCode,:areaDesc,:distCode);
+    END IF ;
+    IF (:Command_type = 'SELECT')
+        THEN 
+            SELECT A.AREA_CODE, 
+               A.AREA_DESC, 
+               DI.DISTRICT_CODE, 
+               DI.DISTRICT_NAME, 
+               S.STATE_CODE, 
+               S.STATE_NAME, 
+               RE.REGION_CODE, 
+               RE.REGION_NAME, 
+               C.COUNTRY_CODE, 
+               C.COUNTRY_NAME, 
+               Z.ZONE_CODE, 
+               Z.ZONE_DESC, 
+               B.BRANCH_CODE, 
+               B.BRANCH_DESC ,
+               A.AREA_NAME
+            FROM   "MDB_DEV"."MST_AREA" AS A 
+               JOIN "MDB_DEV"."MST_DISTRICT" AS DI 
+                 ON A.DISTRICT_CODE = DI.DISTRICT_CODE 
+               JOIN "MDB_DEV"."MST_STATE" AS S 
+                 ON DI.STATE_CODE = S.STATE_CODE 
+               JOIN "MDB_DEV"."MST_REGION" AS RE 
+                 ON S.REGION_CODE = RE.REGION_CODE 
+               JOIN "MDB_DEV"."MST_COUNTRY" AS C 
+                 ON RE.COUNTRY_CODE = C.COUNTRY_CODE 
+               JOIN "MDB_DEV"."MST_ZONE" AS Z 
+                 ON Z.AREA_CODE = A.AREA_CODE 
+               JOIN "MDB_DEV"."MST_BRANCH" AS B 
+                 ON B.ZONE_CODE = Z.ZONE_CODE 
+            WHERE  A.AREA_CODE = :areaCode 
+               AND A.SOFT_DEL = '0' 
+               AND DI.SOFT_DEL = '0' 
+               AND S.SOFT_DEL = '0' 
+               AND RE.SOFT_DEL = '0' 
+               AND C.SOFT_DEL = '0' 
+               AND Z.SOFT_DEL = '0' 
+               AND B.SOFT_DEL = '0'; 
+    END IF ;
+IF(:Command_type='AREAZONE')
+THEN
+ select  * FROM "MDB_DEV"."MST_ZONE" where AREA_CODE =  areaCode;
+ END IF;
+ IF(:Command_type='AREABRANCH')
+THEN
+ select  * FROM "MDB_DEV"."MST_BRANCH" where ZONE_CODE =  areaCode;
+ END IF;
+ 
+END 

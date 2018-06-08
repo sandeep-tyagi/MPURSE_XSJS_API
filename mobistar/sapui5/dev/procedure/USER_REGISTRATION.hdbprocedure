@@ -1,0 +1,25 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::USER_REGISTRATION" ( 
+     in USER_CODE  varchar(20) ,in PASSWORD VARCHAR(16),
+     in LOGIN_NAME  varchar(20) ,in USER_TYPE VARCHAR(16),
+     in LEVEL_ID  Integer ,in POSITION_ID Integer,
+ in STATUS VARCHAR(10),in CHANGE_PASSWORD integer,
+in softDel  varchar(2) ,in createdBy varchar(20), in createdDate date ,
+in modifiedBy varchar(20), in modifiedDate date ,
+  in Command_type varchar(30
+))LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   --READS SQL DATA
+   
+   AS
+BEGIN
+IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_DEV"."USER_REGISTRATION" (USER_CODE , PASSWORD, LOGIN_NAME,USER_TYPE,LEVEL_ID,POSITION_ID,STATUS,CHANGE_PASSWORD)  
+VALUES(:USER_CODE , :PASSWORD,:LOGIN_NAME,:USER_TYPE , :LEVEL_ID,:POSITION_ID,:STATUS,:CHANGE_PASSWORD);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_DEV"."USER_REGISTRATION" ;
+ END IF ;
+END

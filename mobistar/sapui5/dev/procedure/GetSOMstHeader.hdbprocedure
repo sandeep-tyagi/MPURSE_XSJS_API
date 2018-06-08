@@ -1,0 +1,26 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::GetSOMstHeader" (
+    in CustCode varchar(20)
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   READS SQL DATA AS
+BEGIN
+   /*************************************
+       Write your procedure logic 
+   *************************************/
+  /*  select SH.CUST_CODE,SH.SO_NUMBER,SH.CREATED_DATE,CM.cust_name,SH.SO_STATUS from  "MDB_DEV"."SALESORDER_HEADER" as SH
+ inner join "CELEKONDMS"."CUSTOMER_MASTER" as CM on SH.CUST_CODE = CM.Cust_code
+ where SH.parent_code = CustCode and CM.status = 'Active';*/
+ 
+ select SH.CUST_CODE as code,SH.SO_NUMBER as so,SH.CREATED_DATE as dat,
+-- CM.cust_name as Cname,
+ SH.SO_STATUS as status ,sum(SL.TOTAL_AMT) as amt from  "MDB_DEV"."SALESORDER_HEADER" as SH
+ --inner join "CELEKONDMS"."CUSTOMER_MASTER" as CM on SH.CUST_CODE = CM.Cust_code
+ inner join "MDB_DEV"."SALESORDER_LINE" as SL on SL.SO_NUMBER = SH.SO_NUMBER
+ where SH.parent_code = CustCode
+ --and CM.status = 'Active'
+    group by SH.CUST_CODE,SH.SO_NUMBER,SH.CREATED_DATE,
+    --CM.cust_name,
+    SH.SO_STATUS;
+END

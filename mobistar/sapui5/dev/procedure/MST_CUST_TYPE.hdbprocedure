@@ -1,0 +1,37 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_CUST_TYPE" ( 
+    in ID INTEGER ,
+    in CustTypeId varchar(20),
+    in CustTypeDescId varchar(50),
+    in softdel  varchar(2) ,in CREATE_BY varchar(20), in CREATE_DATE date ,
+in MODIFIED_BY varchar(20), in MODIFIED_DATE date ,
+    in Command_type varchar(30)
+)
+     LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+ 
+ IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_DEV"."MST_CUST_TYPE" (CUST_TYPE , CUST_TYPE_DESC,CREATE_BY )  VALUES(:CustTypeId,:CustTypeDescId,:CREATE_BY);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_DEV"."MST_CUST_TYPE" where CUST_TYPE = CustTypeId;
+ END IF ;
+ IF (:Command_type = 'SELECTTYPES')
+THEN 
+ select * FROM "MDB_DEV"."MST_CUST_TYPE" ;
+ END IF ;
+ IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_DEV"."MST_CUST_TYPE" SET CUST_TYPE=:CustTypeId, MODIFIED_BY=:MODIFIED_BY,CUST_TYPE_DESC=:CustTypeDescId, MODIFIED_DATE=:MODIFIED_DATE, SOFT_DEL = softdel  where CUSTOMERTYPE_ID=:ID;
+ END IF ; 
+ IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_DEV"."MST_CUST_TYPE" SET SOFT_DEL=:softDel where CUSTOMERTYPE_ID=:ID;
+ END IF ; 
+ 
+END

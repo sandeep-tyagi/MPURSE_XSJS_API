@@ -1,0 +1,34 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::Branch_CRUD" ( 
+in branchCode VARCHAR(15),in branchDesc VARCHAR(100),in zoneCode VARCHAR(20),
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+  IF (:Command_type = 'SELECT')
+        THEN 
+            SELECT  b.branch_code , b.branch_desc ,
+                    z.zone_code , z.zone_desc,
+                    a.area_code ,a.area_desc ,
+                    d.district_code , d.district_name ,
+                    s.state_name ,s.state_name ,
+                    r.region_code , r.region_code ,
+                    c.country_code ,c.country_name
+                    from       "MDB_TEST_INTEGRATION"."MST_BRANCH" as b 
+                     JOIN "MDB_TEST_INTEGRATION"."MST_ZONE"   AS z 
+                    ON         b.zone_code = z.zone_code 
+                     JOIN "MDB_TEST_INTEGRATION"."MST_AREA" AS a 
+                    ON         a.area_code = z.area_code 
+                     JOIN "MDB_TEST_INTEGRATION"."MST_DISTRICT" AS d 
+                    ON         d.district_code = a.district_code 
+                     JOIN "MDB_TEST_INTEGRATION"."MST_STATE" AS s 
+                    ON         s.state_code = d.state_code 
+                     JOIN "MDB_TEST_INTEGRATION"."MST_REGION" AS r 
+                    ON         r.region_code = r.region_code 
+                     JOIN "MDB_TEST_INTEGRATION"."MST_COUNTRY" AS c 
+                    ON         c.country_code = r.country_code; 
+    END IF ;
+ END 

@@ -1,0 +1,11 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::SaleAndDelivery" ( 
+    -- in From_date VARCHAR(20),
+    -- in To_date VARCHAR(20)
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+  AS
+BEGIN
+  select  * FROM "MDB_DEV"."MST_EQUIPMENTTRANSACTION" ;
+END

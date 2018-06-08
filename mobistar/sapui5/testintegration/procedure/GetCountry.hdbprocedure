@@ -1,0 +1,13 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::GetCountry" ( )
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   READS SQL DATA AS
+BEGIN
+   /*************************************
+       Write your procedure logic 
+   *************************************/
+   select  * from "MDB_TEST_INTEGRATION"."MST_COUNTRY" ;
+   
+   -- select TOP 10 *  from "CELEKONDMS"."CUSTOMER_MASTER"
+END

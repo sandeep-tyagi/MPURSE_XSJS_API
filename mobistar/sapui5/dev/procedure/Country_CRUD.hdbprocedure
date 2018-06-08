@@ -1,0 +1,46 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::Country_CRUD" 
+(in CountryCode VARCHAR(50), IN CountryName VARCHAR(100), Command_type VARCHAR(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   --READS SQL DATA 
+   AS
+BEGIN
+IF(:Command_type='INSERT')
+THEN
+INSERT INTO "MDB_DEV"."MST_COUNTRY"("COUNTRY_CODE","COUNTRY_NAME") VALUES(:CountryCode,:CountryName);
+END IF;
+IF(:Command_type='SEL')
+THEN
+ select  * FROM "MDB_DEV"."MST_COUNTRY" ;
+ END IF;
+ IF(:Command_type='SELECTCOUNTRY')
+THEN
+ select  * FROM "MDB_DEV"."MST_COUNTRY" WHERE COUNTRY_CODE = :CountryCode ;
+ END IF;
+ IF(:Command_type='SELECTREGION')
+THEN
+ select  * FROM "MDB_DEV"."MST_REGION" WHERE COUNTRY_CODE = :CountryCode ;
+ END IF;
+ IF(:Command_type='SELECTSTATE')
+THEN
+ select  * FROM "MDB_DEV"."MST_STATE" WHERE REGION_CODE = :CountryCode ;
+ END IF;
+IF(:Command_type='SELECTDISTRICT')
+THEN
+ select  * FROM "MDB_DEV"."MST_DISTRICT" where STATE_CODE =  :CountryCode;
+ END IF;
+ IF(:Command_type='SELECTAREA')
+THEN
+ select  * FROM "MDB_DEV"."MST_AREA" where DISTRICT_CODE =  :CountryCode;
+ END IF;
+ IF(:Command_type='SELECTZONE')
+THEN
+ select  * FROM "MDB_DEV"."MST_ZONE" where AREA_CODE =  :CountryCode;
+ END IF;
+ IF(:Command_type='SELECTBRANCH')
+THEN
+ select  * FROM "MDB_DEV"."MST_BRANCH" where ZONE_CODE =  :CountryCode;
+ END IF;
+ 
+END

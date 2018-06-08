@@ -1,0 +1,36 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_MENU" ( 
+ in menuId INTEGER ,in menuName VARCHAR(20) ,in orderNo INTEGER,
+in url VARCHAR(200) ,
+in softDel  varchar(2) ,in createdBy varchar(20), in createdDate date ,
+in modifiedBy varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_DEV"."MST_MENU" (MENU_NAME , ORDER_NO , URL )  VALUES(:menuName,:orderNo,:url);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_DEV"."MST_MENU" where MENU_ID = menuId ;
+ END IF ;
+  IF (:Command_type = 'SELECTMENUS')
+THEN 
+ select * FROM "MDB_DEV"."MST_MENU" ;
+ END IF ;
+  IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_DEV"."MST_MENU" SET MENU_NAME=:menuName, ORDER_NO=:orderNo, URL=:url, MODIFIED_DATE=:modifiedDate, SOFT_DEL = softDel  where MENU_ID=:menuId;
+ END IF ;
+ IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_DEV"."MST_MENU" SET SOFT_DEL=:softDel where MENU_ID=:menuId;
+ END IF ;
+ 
+ 
+ END 

@@ -1,0 +1,36 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_POSITION" ( 
+ in positionId  INTEGER ,in positionName VARCHAR(20),
+in softDel  varchar(2) ,in createdBy varchar(20), in createdDate date ,
+in modifiedBy varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+   
+BEGIN
+
+IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_DEV"."MST_POSITION" (POSITION_NAME)  VALUES(:positionName);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_DEV"."MST_POSITION" where POSITION_ID=:positionId;
+ END IF ;
+ IF (:Command_type = 'SELECTPOSITIONS')
+THEN 
+ select * FROM "MDB_DEV"."MST_POSITION" ;
+ END IF ;
+ IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_DEV"."MST_POSITION" SET POSITION_NAME=:positionName, MODIFIED_DATE=:modifiedDate where POSITION_ID=:positionId;
+ END IF ; 
+ IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_DEV"."MST_POSITION" SET SOFT_DEL=:softDel where POSITION_ID=:positionId;
+ END IF ; 
+ 
+ 
+ END 

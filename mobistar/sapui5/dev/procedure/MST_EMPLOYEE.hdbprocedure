@@ -1,0 +1,55 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_EMPLOYEE" (in EMPLOYEE_ID Integer, in EmpCode varchar(50),in EmpName VARCHAR(200),
+in Address1 varchar(500),in Address2 VARCHAR(500),
+in Country varchar(50),in State VARCHAR(60),
+in District varchar(60),in PhoneNo VARCHAR(13),
+in EmailId varchar(50),in RoleId Integer,
+in POSITION_ID varchar(15),
+in Status integer,in fromdate date,in tilldate date,
+in SOFT_DEL  varchar(2) ,in CREATE_BY varchar(20), in CREATE_DATE date ,
+in MODIFIED_BY varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name> 
+   --READS SQL DATA 
+   /*,ROLE_ID,POSITION_ID,POSITION_VALUE
+:RoleId,:POSITION_ID,:POSITION_VALUE*/
+/*Role Id is not upload some issues in role and position id*/
+   AS
+BEGIN
+  IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_DEV"."MST_EMPLOYEE" (EMPLOYEE_CODE,EMPLOYEE_NAME,ADDRESS1,ADDRESS2,COUNTRY,STATE,DISTRICT,PHONE_NUMBER,EMAIL,ROLE_POSITION_ID,POSITION_VALUE_ID,STATUS,CREATE_BY)
+VALUES(:EmpCode,:EmpName,:Address1,:Address2,:Country,:State,:District,:PhoneNo,:EmailId,:RoleId,:POSITION_ID,:Status,:CREATE_BY);
+ END IF ;
+  IF(:Command_type = 'SELECT')
+THEN
+Select me.EMPLOYEE_CODE,me.EMPLOYEE_NAME,me.ADDRESS1,me.ADDRESS2,mc.COUNTRY_NAME,ms.STATE_NAME,md.DISTRICT_NAME,me.PHONE_NUMBER
+,me.EMAIL,me.ROLE_POSITION_ID,me.POSITION_VALUE_ID,me.STATUS,me.ACTIVE_DATE,me.ACTIVE_TILL_DATE,RO.ROLE_NAME,
+MP.POSITION_NAME
+from  "MDB_DEV"."MST_EMPLOYEE" as me
+inner join "MDB_DEV"."MST_COUNTRY" as mc on me.COUNTRY = mc.COUNTRY_CODE
+inner join "MDB_DEV"."MST_STATE" as ms on me.STATE = ms.STATE_CODE
+inner join "MDB_DEV"."MST_DISTRICT" as md on me.DISTRICT = md.DISTRICT_CODE
+inner join "MDB_DEV"."MAP_ROLE_POSITION" as RP on me.ROLE_POSITION_ID = RP.ROLE_POS_ID
+inner join "MDB_DEV"."MST_ROLE" as RO on RP.ROLE_ID = RO.ROLE_ID 
+inner join "MDB_DEV"."MST_POSITION" as MP on RP.POSITION_ID = MP.POSITION_ID
+where me.SOFT_DEL= :SOFT_DEL;
+/*Select EMPLOYEE_CODE,EMPLOYEE_NAME,ADDRESS1,ADDRESS2,COUNTRY,STATE,DISTRICT,PHONE_NUMBER,EMAIL,ROLE_POSITION_ID,POSITION_VALUE_ID,STATUS,ACTIVE_DATE,ACTIVE_TILL_DATE from  "MDB_DEV"."MST_EMPLOYEE"
+where SOFT_DEL=:SOFT_DEL;*/
+ END IF ;
+  
+  IF(:Command_type = 'StatusUpdateActive')
+THEN
+UPDATE "MDB_DEV"."MST_EMPLOYEE" SET STATUS=:Status, ACTIVE_DATE=:fromdate where EMPLOYEE_CODE=:EmpCode;
+ END IF ;
+  IF(:Command_type = 'StatusUpdateDeactive')
+THEN
+UPDATE "MDB_DEV"."MST_EMPLOYEE" SET STATUS=:Status, ACTIVE_TILL_DATE=:fromdate where EMPLOYEE_CODE=:EmpCode;
+ END IF ;
+  IF(:Command_type = 'StatusUpdateDelete')
+THEN
+UPDATE "MDB_DEV"."MST_EMPLOYEE" SET SOFT_DEL=:SOFT_DEL where EMPLOYEE_CODE=:EmpCode;
+ END IF ;
+  
+END

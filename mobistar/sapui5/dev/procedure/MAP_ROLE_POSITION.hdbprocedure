@@ -1,0 +1,61 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MAP_ROLE_POSITION" (
+in rolePosId INTEGER ,in roleId INTEGER ,in positionId INTEGER,
+in softDel  varchar(2) ,in createdBy varchar(20), in createdDate date ,
+in modifiedBy varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+IF(:Command_type = 'INSERT')
+THEN
+    INSERT INTO "MDB_DEV"."MAP_ROLE_POSITION" ("ROLE_ID","POSITION_ID","CREATE_BY") values (:roleId,:positionId,:createdBy);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+--  select L.* FROM "MDB_DEV"."MAP_ROLE_LOCATION" L join  "MDB_DEV"."MST_ROLE" R on L.Role_id=R.Role_Id;
+ 
+--  select L.*,R.ROLE_NAME FROM "MDB_DEV"."MAP_ROLE_LOCATION" L join  "MDB_DEV"."MST_ROLE" R on L.Role_id=R.Role_Id;
+    SELECT POS.POSITION_NAME, 
+       R.ROLE_NAME ,
+       P.ROLE_POS_ID ,
+       P.ROLE_ID ,
+       P.POSITION_ID,
+       P.*
+    FROM   "MDB_DEV"."MAP_ROLE_POSITION" P 
+       JOIN "MDB_DEV"."MST_ROLE" R 
+         ON P.ROLE_ID = R.ROLE_ID 
+       JOIN "MDB_DEV"."MST_POSITION"  AS  POS 
+         ON P.POSITION_ID = POS.POSITION_ID; 
+ END IF ;
+ IF (:Command_type = 'SELECTROLEID')
+THEN 
+    SELECT POS.POSITION_NAME, 
+       R.ROLE_NAME ,
+       P.ROLE_POS_ID ,
+       P.ROLE_ID ,
+       P.POSITION_ID,
+       P.*
+    FROM   "MDB_DEV"."MAP_ROLE_POSITION" P 
+       JOIN "MDB_DEV"."MST_ROLE" R 
+         ON P.ROLE_ID = R.ROLE_ID 
+       JOIN "MDB_DEV"."MST_POSITION" AS POS 
+         ON P.POSITION_ID = POS.POSITION_ID
+    WHERE P.ROLE_ID= :roleId and P.POSITION_ID= :positionId   ; 
+ END IF ;
+ 
+ IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_DEV"."MAP_ROLE_POSITION" SET ROLE_ID=:roleId, POSITION_ID=:positionId , MODIFIED_DATE=:modifiedDate ,SOFT_DEL=:softDel  where ROLE_POS_ID
+=:rolePosId;
+ END IF ;
+ 
+  IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_DEV"."MAP_ROLE_POSITION" SET SOFT_DEL=:softDel where 	
+ROLE_POS_ID=:rolePosId;
+ END IF ;
+ END 

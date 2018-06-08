@@ -1,0 +1,36 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_ATTRIBUTE" (
+ in attributeId  INTEGER ,in attributeName VARCHAR(20),
+ in display VARCHAR(6),
+in softDel  varchar(2) ,in createdBy varchar(20), in createdDate date ,
+in modifiedBy varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_DEV"."MST_ATTRIBUTE" (ATTRIBUTE_NAME , DISPLAY ,CREATE_BY)  VALUES(:attributeName , :display,:createdBy);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_DEV"."MST_ATTRIBUTE" where ATTRIBUTE_ID = attributeId;
+ END IF ;
+ IF (:Command_type = 'SELECTATTRIBUTES')
+THEN 
+ select * FROM "MDB_DEV"."MST_ATTRIBUTE" ;
+ END IF ;
+  IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_DEV"."MST_ATTRIBUTE" SET ATTRIBUTE_NAME=:attributeName, DISPLAY=:display ,MODIFIED_BY=:modifiedBy, MODIFIED_DATE=:modifiedDate , SOFT_DEL = softDel  where ATTRIBUTE_ID=:attributeId;
+ END IF ;
+  IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_DEV"."MST_ATTRIBUTE" SET SOFT_DEL=:softDel where ATTRIBUTE_ID=:attributeId;
+ END IF ;
+ 
+ 
+ END 

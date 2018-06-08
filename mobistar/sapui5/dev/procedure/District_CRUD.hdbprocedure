@@ -1,0 +1,57 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::District_CRUD"(
+		IN districtCode VARCHAR(20), 
+		IN districtName VARCHAR(30), 
+		IN stateCode VARCHAR(20), 
+		IN Command_type VARCHAR(30)
+	)
+	LANGUAGE SQLSCRIPT
+	SQL SECURITY INVOKER
+AS
+BEGIN
+	IF (:Command_type = 'INSERT') THEN
+		INSERT INTO "MDB_DEV"."MST_DISTRICT"("DISTRICT_CODE", "DISTRICT_NAME", "STATE_CODE") VALUES(:districtCode, :districtName, :stateCode);
+	END IF;
+	IF (:Command_type = 'UPDATE') THEN
+		UPDATE "MDB_DEV"."MST_DISTRICT"
+SET DISTRICT_NAME = :districtName, 
+			STATE_CODE = :stateCode
+WHERE DISTRICT_CODE = :districtCode;
+	END IF;
+	IF (:Command_type = 'SELECT') THEN
+		SELECT *
+			FROM "MDB_DEV"."MST_DISTRICT";
+	END IF;
+	IF (:Command_type = 'SELECTDIS') THEN
+		SELECT d.DISTRICT_CODE, 
+				d.DISTRICT_NAME, 
+				s.STATE_CODE, 
+				s.STATE_NAME, 
+				s.COUNTRY_CODE, 
+				r.REGION_CODE, 
+				r.REGION_NAME
+			FROM "MDB_DEV"."MST_DISTRICT" AS d
+				INNER JOIN "MDB_DEV"."MST_STATE" AS s
+				ON d.STATE_CODE = s.STATE_CODE
+				INNER JOIN "MDB_DEV"."MST_REGION" AS r
+				ON r.REGION_CODE = s.REGION_CODE
+			WHERE d.DISTRICT_CODE = :districtCode
+				AND d.SOFT_DEL = '0'
+				AND s.SOFT_DEL = '0'
+				AND r.SOFT_DEL = '0';
+	END IF;
+	IF (:Command_type = 'DISTRICTAREA') THEN
+		SELECT *
+			FROM "MDB_DEV"."MST_AREA"
+			WHERE DISTRICT_CODE = :districtCode;
+	END IF;
+	IF (:Command_type = 'DISTRICTZONE') THEN
+		SELECT *
+			FROM "MDB_DEV"."MST_ZONE"
+			WHERE AREA_CODE = :districtCode;
+	END IF;
+	IF (:Command_type = 'DISTRICTBRANCH') THEN
+		SELECT *
+			FROM "MDB_DEV"."MST_BRANCH"
+			WHERE ZONE_CODE = :districtCode;
+	END IF;
+END;

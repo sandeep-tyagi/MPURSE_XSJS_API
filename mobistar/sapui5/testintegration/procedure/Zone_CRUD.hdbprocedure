@@ -1,0 +1,43 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::Zone_CRUD" (
+in zoneCode VARCHAR(15),in zoneDesc VARCHAR(20),in areaCode VARCHAR(20), in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+    IF (:Command_type = 'SELECT')
+        THEN 
+            SELECT A.AREA_CODE, 
+               A.AREA_DESC, 
+               DI.DISTRICT_CODE, 
+               DI.DISTRICT_NAME, 
+               S.STATE_CODE, 
+               S.STATE_NAME, 
+               RE.REGION_CODE, 
+               RE.REGION_NAME, 
+               C.COUNTRY_CODE, 
+               C.COUNTRY_NAME, 
+               Z.ZONE_CODE, 
+               Z.ZONE_DESC 
+                  FROM   "MDB_TEST_INTEGRATION"."MST_AREA" AS A 
+               JOIN "MDB_TEST_INTEGRATION"."MST_DISTRICT" AS DI 
+                 ON A.DISTRICT_CODE = DI.DISTRICT_CODE 
+               JOIN "MDB_TEST_INTEGRATION"."MST_STATE" AS S 
+                 ON DI.STATE_CODE = S.STATE_CODE 
+               JOIN "MDB_TEST_INTEGRATION"."MST_REGION" AS RE 
+                 ON S.REGION_CODE = RE.REGION_CODE 
+               JOIN "MDB_TEST_INTEGRATION"."MST_COUNTRY" AS C 
+                 ON RE.COUNTRY_CODE = C.COUNTRY_CODE 
+               JOIN "MDB_TEST_INTEGRATION"."MST_ZONE" AS Z 
+                 ON Z.AREA_CODE = A.AREA_CODE 
+                  WHERE  Z.ZONE_CODE = :zoneCode  ;
+                  END IF ;
+
+ IF(:Command_type='ZONEBRANCH')
+THEN
+ select  * FROM "MDB_TEST_INTEGRATION"."MST_BRANCH" where ZONE_CODE =  :zoneCode;
+ END IF;
+ 
+ END 

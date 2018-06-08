@@ -1,0 +1,35 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::MST_ROLE" ( in roleId  INTEGER ,in roleName VARCHAR(20),
+in softDel  varchar(2) ,in CREATE_BY varchar(20), in CREATE_DATE date ,
+in MODIFIED_BY varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_TEST_INTEGRATION"."MST_ROLE" (ROLE_NAME,CREATE_BY)  VALUES(:roleName,:CREATE_BY);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_TEST_INTEGRATION"."MST_ROLE" where  ROLE_ID = roleId;
+ END IF ;
+ 
+ IF (:Command_type = 'SELECTROLES')
+THEN 
+ select * FROM "MDB_TEST_INTEGRATION"."MST_ROLE" ;
+ END IF ;
+ 
+IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_TEST_INTEGRATION"."MST_ROLE" SET ROLE_NAME=:roleName,SOFT_DEL=:softDel,MODIFIED_BY=:MODIFIED_BY, MODIFIED_DATE=:modifiedDate where ROLE_ID=:roleId;
+ END IF ; 
+IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_TEST_INTEGRATION"."MST_ROLE" SET SOFT_DEL=:softDel where ROLE_ID=:roleId;
+ END IF ; 
+ 
+ END

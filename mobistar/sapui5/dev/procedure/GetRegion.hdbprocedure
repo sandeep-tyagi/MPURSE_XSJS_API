@@ -1,0 +1,64 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::GetRegion" (
+ in regionCode VARCHAR(30),in regionName varchar(100),in countryCode varchar(30),
+    in softDel  varchar(2) ,in CREATE_BY varchar(20), in CREATE_DATE date ,
+in MODIFIED_BY varchar(20), in modifiedDate date ,
+  in Command_type varchar(30
+))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+  -- READS SQL DATA
+   AS
+BEGIN
+   /*************************************
+       Write your procedure logic 
+       insert into  "MDB_DEV"."MST_REGION"(REGION_CODE,REGION_NAME,COUNTRY_CODE) values(?,?,?)
+   *************************************/
+  IF (:Command_type = 'SELECT')
+THEN 
+select * from "MDB_DEV"."MST_REGION" where 
+   (COUNTRY_CODE is not null and COUNTRY_CODE=countryCode and REGION_CODE is not null and REGION_CODE=regionCode)
+   or (COUNTRY_CODE is not null and COUNTRY_CODE=countryCode and REGION_CODE is null)
+   or (REGION_CODE is not null and REGION_CODE=regionCode and COUNTRY_CODE is null)
+   or (COUNTRY_CODE is  null and REGION_CODE is null);
+ END IF ;
+  IF (:Command_type = 'ALLREGION')
+THEN 
+select * from "MDB_DEV"."MST_REGION";
+ END IF ;
+  IF (:Command_type = 'INSERT')
+THEN 
+ insert into  "MDB_DEV"."MST_REGION"(REGION_CODE,REGION_NAME,COUNTRY_CODE,CREATE_BY) values(:regionCode,:regionName,:countryCode,:CREATE_BY);
+ END IF ;
+  IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_DEV"."MST_REGION" SET REGION_NAME=:regionName , SOFT_DEL = :softDel,MODIFIED_BY = :MODIFIED_BY ,MODIFIED_DATE = :modifiedDate where REGION_CODE=:regionCode;
+ END IF ;
+ 
+ IF(:Command_type='SELECTREGION')
+THEN
+ select  * FROM "MDB_DEV"."MST_REGION" WHERE REGION_CODE = :regionCode ;
+ END IF;
+ IF(:Command_type='SELECTSTATE')
+THEN
+ select  * FROM "MDB_DEV"."MST_STATE" WHERE REGION_CODE = :regionCode ;
+ END IF;
+IF(:Command_type='SELECTDISTRICT')
+THEN
+ select  * FROM "MDB_DEV"."MST_DISTRICT" where STATE_CODE =  :regionCode;
+ END IF;
+ IF(:Command_type='SELECTAREA')
+THEN
+ select  * FROM "MDB_DEV"."MST_AREA" where DISTRICT_CODE =  :regionCode;
+ END IF;
+ IF(:Command_type='SELECTZONE')
+THEN
+ select  * FROM "MDB_DEV"."MST_ZONE" where AREA_CODE =  :regionCode;
+ END IF;
+ IF(:Command_type='SELECTBRANCH')
+THEN
+ select  * FROM "MDB_DEV"."MST_BRANCH" where ZONE_CODE =  :regionCode;
+ END IF;
+   
+   -- select TOP 10 *  from "CELEKONDMS"."CUSTOMER_MASTER"
+END

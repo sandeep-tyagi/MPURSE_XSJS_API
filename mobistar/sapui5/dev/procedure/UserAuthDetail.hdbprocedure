@@ -1,0 +1,76 @@
+PROCEDURE "MDB_DEV"."com.mobistar.sapui5.dev.procedure::UserAuthDetail" ( 
+    in EmployeeCode varchar(50),
+    in MenuName varchar(50),
+    in Command_type varchar(30)
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+  -- READS SQL DATA 
+   AS
+BEGIN
+  IF(:Command_type = 'EmpEligibleMenu')
+THEN
+SELECT distinct menu.MENU_NAME
+FROM   "MDB_DEV"."MST_EMPLOYEE" AS Emp 
+       INNER JOIN "MDB_DEV"."MAP_ROLE_POS_ATTR" AS RolePosAtt 
+               ON Emp.ROLE_POSITION_ID = RolePosAtt.ROLE_POS_ID 
+       INNER JOIN "MDB_DEV"."MST_SUB_MENU" AS SubMenu 
+               ON RolePosAtt.SUB_MENU_ID = SubMenu.SUBMENU_ID 
+       INNER JOIN "MDB_DEV"."MST_MENU" AS menu 
+               ON SubMenu.MENU_ID = menu.MENU_ID 
+       INNER JOIN "MDB_DEV"."MST_ATTRIBUTE" AS attri 
+               ON RolePosAtt.ATTRIBUTE_ID = attri.ATTRIBUTE_ID 
+WHERE  Emp.EMPLOYEE_CODE = EmployeeCode;
+ END IF ;
+  IF(:Command_type = 'UserConfiguration')
+THEN
+SELECT distinct SubMenu.SUB_MENU_NAME,SubMenu.KEY,SubMenu.ICON
+FROM   "MDB_DEV"."MST_EMPLOYEE" AS Emp 
+       INNER JOIN "MDB_DEV"."MAP_ROLE_POS_ATTR" AS RolePosAtt 
+               ON Emp.ROLE_POSITION_ID = RolePosAtt.ROLE_POS_ID 
+       INNER JOIN "MDB_DEV"."MST_SUB_MENU" AS SubMenu 
+               ON RolePosAtt.SUB_MENU_ID = SubMenu.SUBMENU_ID 
+        INNER JOIN "MDB_DEV"."MST_MENU" AS menu 
+               ON SubMenu.MENU_ID = menu.MENU_ID        
+               WHERE  Emp.EMPLOYEE_CODE = EmployeeCode and menu.MENU_NAME = MenuName;
+ END IF ;
+ 
+   IF(:Command_type = 'UserConfigurationMenu')
+THEN
+SELECT distinct menu.MENU_ID,menu.MENU_NAME,menu.HEADER,menu.SUB_HEADER,menu.FRAME_TYPE,menu.HEADER_IMAGE,menu.FOOTER,menu.TILE_TYPE,menu.press
+FROM   "MDB_DEV"."MST_EMPLOYEE" AS Emp 
+       INNER JOIN "MDB_DEV"."MAP_ROLE_POS_ATTR" AS RolePosAtt 
+               ON Emp.ROLE_POSITION_ID = RolePosAtt.ROLE_POS_ID 
+       INNER JOIN "MDB_DEV"."MST_SUB_MENU" AS SubMenu 
+               ON RolePosAtt.SUB_MENU_ID = SubMenu.SUBMENU_ID 
+        INNER JOIN "MDB_DEV"."MST_MENU" AS menu 
+               ON SubMenu.MENU_ID = menu.MENU_ID        
+               WHERE  Emp.EMPLOYEE_CODE = EmployeeCode;
+ END IF ;
+ 
+    IF(:Command_type = 'UserConfigurationMenuCust')
+THEN
+select distinct menu.MENU_ID,menu.MENU_NAME,menu.HEADER,menu.SUB_HEADER,menu.FRAME_TYPE,menu.HEADER_IMAGE,menu.FOOTER,menu.TILE_TYPE,menu.press
+from "MDB_DEV"."MST_CUST_TYPE" as MCT 
+inner join "MDB_DEV"."MAP_CUST_LEVEL" as CL on MCT.CUSTOMERTYPE_ID = CL.CUSTOMERTYPE_ID
+inner join "MDB_DEV"."MAP_LEV_ATTR" as MLA on CL.LEVEL_ID = MLA.LEVEL_ID
+INNER JOIN "MDB_DEV"."MST_SUB_MENU" AS SubMenu 
+               ON MLA.SUB_MENU_ID = SubMenu.SUBMENU_ID 
+        INNER JOIN "MDB_DEV"."MST_MENU" AS menu 
+               ON SubMenu.MENU_ID = menu.MENU_ID
+where MCT.CUST_TYPE = EmployeeCode;
+ END IF ;
+ 
+ IF(:Command_type = 'UserConfigurationAttribute')
+THEN
+SELECT distinct Attri.ATTRIBUTE_NAME,Attri.ATTRIBUTE_ID
+FROM   "MDB_DEV"."MST_EMPLOYEE" AS Emp 
+       INNER JOIN "MDB_DEV"."MAP_ROLE_POS_ATTR" AS RolePosAtt 
+               ON Emp.ROLE_POSITION_ID = RolePosAtt.ROLE_POS_ID 
+       INNER JOIN "MDB_DEV"."MST_SUB_MENU" AS SubMenu 
+               ON RolePosAtt.SUB_MENU_ID = SubMenu.SUBMENU_ID 
+        inner join "MDB_DEV"."MST_ATTRIBUTE" as Attri on RolePosAtt.ATTRIBUTE_ID = Attri.ATTRIBUTE_ID       
+               WHERE  Emp.EMPLOYEE_CODE = EmployeeCode and SubMenu.SUB_MENU_NAME = MenuName;
+ END IF ;
+END

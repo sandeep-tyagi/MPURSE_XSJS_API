@@ -1,0 +1,34 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::MST_LEVEL" ( 
+    in ID INTEGER ,
+    in levelName varchar(20),
+    in softDel  varchar(2) ,in CREATE_BY varchar(20), in CREATE_DATE date ,
+in MODIFIED_BY varchar(20), in modifiedDate date ,
+    in Command_type varchar(30)
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+  /* READS SQL DATA AS*/
+  
+  
+  AS
+BEGIN
+
+ IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_TEST_INTEGRATION"."MST_LEVEL" (LEVEL,CREATE_BY)  VALUES(:levelName,:CREATE_BY);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_TEST_INTEGRATION"."MST_LEVEL" ;
+ END IF ;
+ IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_TEST_INTEGRATION"."MST_LEVEL" SET LEVEL=:levelName, MODIFIED_DATE=:modifiedDate, SOFT_DEL=:softDel,MODIFIED_BY=:MODIFIED_BY where LEVEL_ID=:ID;
+ END IF ;
+ IF (:Command_type = 'DELETE')
+THEN 
+ UPDATE "MDB_TEST_INTEGRATION"."MST_LEVEL" SET SOFT_DEL=:softDel where LEVEL_ID=:ID;
+ END IF ;
+ 
+END

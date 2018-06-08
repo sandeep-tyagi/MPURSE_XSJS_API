@@ -1,0 +1,14 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::GetSOLineItems" ( 
+    in SONumber varchar(20)
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   READS SQL DATA AS
+BEGIN
+ select SL.MATERIAL_CODE,SL.ORDER_QTY,SL.UNIT_PRICE,SL.TOTAL_AMT
+ --,m.MODEL 
+ from "MDB_DEV"."SALESORDER_LINE" as SL
+ --inner join  "CELEKONDMS"."MATERIAL_MASTER" as m on SL.MATERIAL_CODE = m.MATERIAL_CODE
+ where SL.SO_NUMBER = SONumber;
+END

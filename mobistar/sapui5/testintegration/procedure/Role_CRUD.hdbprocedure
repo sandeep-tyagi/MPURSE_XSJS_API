@@ -1,0 +1,19 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::Role_CRUD" ( in ROLE_ID INTEGER, in roleName VARCHAR(20), in SOFT_DEL VARCHAR(2),in CREATE_BY VARCHAR(20),
+in CREATE_DATE DATE, in MODIFIED_BY VARCHAR(20), in MODIFIED_DATE DATE ,
+in Command_type VARCHAR(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   --READS SQL DATA AS
+   AS
+BEGIN
+  IF(:Command_type ='INSERT')
+  THEN
+  INSERT INTO "MDB_TEST_INTEGRATION"."MST_ROLE"(ROLE_NAME) VALUES(:roleName);
+  END IF;
+  IF(:Command_type='SELECT')
+  THEN
+   select * FROM "MDB_TEST_INTEGRATION"."MST_ROLE";
+   END IF;
+  
+END

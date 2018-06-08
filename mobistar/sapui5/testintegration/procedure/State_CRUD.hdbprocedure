@@ -1,0 +1,60 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::State_CRUD" (
+in stateCode VARCHAR(20),in stateName VARCHAR(100),in countryCode VARCHAR(30),in REGIONCODE VARCHAR(15),
+  in softDel  varchar(2) ,in createdBy varchar(20), in createdDate date ,
+in modifiedBy varchar(20), in modifiedDate date ,
+  in Command_type varchar(30))
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA AS*/
+   AS
+BEGIN
+
+IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_TEST_INTEGRATION"."MST_STATE" ("STATE_CODE","STATE_NAME","COUNTRY_CODE","REGION_CODE","CREATE_BY") VALUES(:stateCode,:stateName,:countryCode,:REGIONCODE,:createdBy);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+ select * FROM "MDB_TEST_INTEGRATION"."MST_STATE" ;
+ END IF ;
+ IF (:Command_type = 'SELECT1STATE')
+THEN 
+ select * FROM "MDB_TEST_INTEGRATION"."MST_STATE" where COUNTRY_CODE = countryCode ;
+ END IF ;
+ IF (:Command_type = 'SELECTSTATE')
+THEN 
+SELECT s.STATE_CODE, 
+       s.STATE_NAME, 
+       s.COUNTRY_CODE, 
+       r.REGION_CODE, 
+       r.REGION_NAME 
+FROM   "MDB_TEST_INTEGRATION"."MST_STATE" AS s 
+       JOIN "MDB_TEST_INTEGRATION"."MST_REGION" AS r 
+         ON r.REGION_CODE = s.REGION_CODE 
+WHERE  s.STATE_CODE = :stateCode
+       AND s.SOFT_DEL = '0' 
+       AND r.SOFT_DEL = '0'; 
+ END IF ;
+ IF(:Command_type='STATEDISTRICT')
+THEN
+ select  * FROM "MDB_TEST_INTEGRATION"."MST_DISTRICT" where STATE_CODE =  :stateCode;
+ END IF;
+ IF(:Command_type='STATEAREA')
+THEN
+ select  * FROM "MDB_TEST_INTEGRATION"."MST_AREA" where DISTRICT_CODE =  :stateCode;
+ END IF;
+ IF(:Command_type='STATEZONE')
+THEN
+ select  * FROM "MDB_TEST_INTEGRATION"."MST_ZONE" where AREA_CODE =  :stateCode;
+ END IF;
+ IF(:Command_type='STATEBRANCH')
+THEN
+ select  * FROM "MDB_TEST_INTEGRATION"."MST_BRANCH" where ZONE_CODE =  :stateCode;
+ END IF;
+ 
+   IF (:Command_type = 'UPDATE')
+THEN 
+ UPDATE "MDB_TEST_INTEGRATION"."MST_STATE" SET STATE_NAME=:stateName , SOFT_DEL = :softDel ,MODIFIED_BY = :modifiedBy,MODIFIED_DATE = :modifiedDate where STATE_CODE=:stateCode and COUNTRY_CODE=:countryCode;
+ END IF ;
+ END 

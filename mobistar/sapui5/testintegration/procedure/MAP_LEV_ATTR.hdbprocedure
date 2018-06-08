@@ -1,0 +1,31 @@
+PROCEDURE "MDB_TEST_INTEGRATION"."com.mobistar.sapui5.testintegration.procedure::MAP_LEV_ATTR" ( 
+    in ID INTEGER ,
+    in LevelId integer,
+     in AttId integer,
+    in SubMenuId integer,
+    in SOFT_DEL  varchar(2) ,in CREATE_BY varchar(20), in CREATE_DATE date ,
+in MODIFIED_BY varchar(20), in MODIFIED_DATE date ,
+    in Command_type varchar(30)
+)
+   LANGUAGE SQLSCRIPT
+   SQL SECURITY INVOKER
+   --DEFAULT SCHEMA <default_schema_name>
+   /*READS SQL DATA */
+   AS
+BEGIN
+   IF(:Command_type = 'INSERT')
+THEN
+INSERT INTO "MDB_TEST_INTEGRATION"."MAP_LEV_ATTR" (LEVEL_ID ,ATTRIBUTE_ID, SUB_MENU_ID )  VALUES(:LevelId,:AttId,:SubMenuId);
+ END IF ;
+IF (:Command_type = 'SELECT')
+THEN 
+--  select * FROM "MDB_TEST_INTEGRATION"."MAP_LEV_ATTR" ;
+     SELECT ML.LEVEL, 
+       MLA.* , MSM.SUB_MENU_NAME ,MM.MENU_NAME
+    FROM   "MDB_TEST_INTEGRATION"."MST_LEVEL" ML 
+       JOIN "MDB_TEST_INTEGRATION"."MAP_LEV_ATTR" MLA 
+         ON ML.LEVEL_ID = MLA.LEVEL_ID  join "MDB_TEST_INTEGRATION"."MST_SUB_MENU" MSM on  MSM.SUBMENU_ID = MLA.SUB_MENU_ID
+         join "MDB_TEST_INTEGRATION"."MST_MENU" MM ON MM.MENU_ID = MSM.MENU_ID;    
+            
+ END IF ;
+END
