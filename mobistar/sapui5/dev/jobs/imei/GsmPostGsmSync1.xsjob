@@ -1,0 +1,12 @@
+{
+    "description": "PostGsmSync1 Job",
+    "action": "com.mobistar.sapui5.dev.jobs.imei:Gsm.xsjs::postGsmSync1",
+    "schedules": [{
+        "description": "Post GSM Sync1 performed at every 30 min and 1 second",
+           "xscron":"* * * * * */30 1",
+        "parameter": {
+         
+       
+        } 
+    }]
+} 

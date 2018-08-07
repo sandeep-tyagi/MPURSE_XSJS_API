@@ -1,0 +1,15 @@
+//service{
+//"MDB_DEV"."MST_STATUS" as "Status";
+//}
+
+
+service {
+
+   "MDB_DEV"."MST_CUSTOMER"
+
+    as "Customers" with ("CUST_TYPE","SAPUSER_ID","CUST_NAME")
+
+  keys generate local "ID";
+
+  //  aggregates always; 
+}

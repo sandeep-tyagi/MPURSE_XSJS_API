@@ -200,7 +200,7 @@ function getStates() {
 	var pstmtState = '';
 	var queryState = '';
 	try {
-		queryState = 'SELECT * FROM "MDB_DEV"."MST_STATE" as s inner join "MDB_DEV"."MST_REGION" as r on s.REGION_CODE=r.REGION_CODE ';
+			queryState = 'SELECT s.STATE_CODE,s.STATE_NAME,s.COUNTRYCODE,s.REGIONCODE,r.REGION_NAME FROM "MDB_DEV"."STATESDATA" as s inner join "MDB_DEV"."MST_REGION" as r on s.REGIONCODE=r.REGION_CODE ';
 		pstmtState = connection.prepareStatement(queryState);
 		var rsState = pstmtState.executeQuery();
 		while (rsState.next()) {
@@ -209,10 +209,60 @@ function getStates() {
 			record.StateName = rsState.getString(2);
 			record.CountryCode = rsState.getString(3);
 			record.RegionCode = rsState.getString(4);
-			record.SOFT_DEL = rsState.getString(5);
+			/*record.SOFT_DEL = rsState.getString(5);
 			record.CREATE_BY = rsState.getString(6);
+			record.CREATE_DATE = rsState.getString(7);*/
+			record.RegionName = rsState.getString(5);
+			//checkStatusDescription(record);
+            //dateFormat(record);
+			output.results.push(record);
+		}
+
+		connection.close();
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+
+
+/**
+ * To fetch All Regional of region master.
+ * @return {output} row of resultset.
+ * @author: Laxmi.
+ */
+function getRegionalStates() {
+	var output = {
+		results: []
+	};
+	var connection = $.db.getConnection();
+	var pstmtState = '';
+	var queryState = '';
+	try {
+		queryState = 'Select TR.REGIONAL_CODE, MR.REGIONAL_NAME,MS.COUNTRYCODE, TR.STATE_CODE, MS.STATE_NAME,TR.ZONE_CODE,MR.CREATE_DATE,MR.SOFT_DEL,MR.CREATE_BY from "MDB_DEV"."TRN_REGIONAL" as TR '
++ ' inner join "MDB_DEV"."MST_REGIONAL" as MR on TR.REGIONAL_CODE= MR.REGIONAL_CODE '
++ ' inner join "MDB_DEV"."STATESDATA" as MS on TR.STATE_CODE = MS.STATE_CODE ';
+		//'SELECT * FROM "MDB_DEV"."MST_STATE" as s inner join "MDB_DEV"."MST_REGION" as r on s.REGION_CODE=r.REGION_CODE ';
+		pstmtState = connection.prepareStatement(queryState);
+		var rsState = pstmtState.executeQuery();
+		while (rsState.next()) {
+			var record = {};
+			record.RegionalCode = rsState.getString(1);
+			record.RegionalName = rsState.getString(2);
+			record.CountryCode = rsState.getString(3);
+			record.StateCode = rsState.getString(4);
+			record.StateName = rsState.getString(5);
+			record.ZoneCode = rsState.getString(6);
 			record.CREATE_DATE = rsState.getString(7);
-			record.RegionName = rsState.getString(11);
+			record.SOFT_DEL = rsState.getString(8);
+			record.CREATE_BY = rsState.getString(9);
 			checkStatusDescription(record);
             dateFormat(record);
 			output.results.push(record);
@@ -312,10 +362,10 @@ function getCountryStates() {
 	var queryState = '';
 	try {
 
-		queryState = 'SELECT * FROM  "MDB_DEV"."MST_STATE" WHERE COUNTRY_CODE=? and soft_del = ?';
+		queryState = 'SELECT STATE_CODE,STATE_NAME,COUNTRYCODE,REGIONCODE FROM  "MDB_DEV"."STATESDATA" WHERE COUNTRYCODE=? ';
 		pstmtState = connection.prepareStatement(queryState);
 		pstmtState.setString(1, countryCode);
-        pstmtState.setString(2, '0');
+        //pstmtState.setString(2, '0');
 		var rsState = pstmtState.executeQuery();
 
 		while (rsState.next()) {
@@ -388,11 +438,12 @@ function getDistrictByStateCountry() {
 	var record;
 	var StateCode = $.request.parameters.get('StateCode');
 	try {
-		var query =
-			'select md.DISTRICT_CODE,md.DISTRICT_NAME,ms.STATE_CODE,ms.REGION_CODE,ms.COUNTRY_CODE  from "MDB_DEV"."MST_DISTRICT" as md inner join "MDB_DEV"."MST_STATE" as ms on md.STATE_CODE = ms.STATE_CODE inner join "MDB_DEV"."MST_COUNTRY" as cm on ms.COUNTRY_CODE = cm.COUNTRY_CODE where md.STATE_CODE = ? and md.soft_del = ? ';
+		var query = 'select md.DISTRICT_CODE,md.DISTRICT_NAME,ms.STATE_CODE,ms.REGIONCODE,ms.COUNTRYCODE  from "MDB_DEV"."MST_DISTRICT" as md inner join "MDB_DEV"."STATESDATA" as ms on md.STATE_CODE = ms.STATE_CODE inner join "MDB_DEV"."MST_COUNTRY" as cm on ms.COUNTRYCODE = cm.COUNTRY_CODE where md.STATE_CODE = ? ';
+		
+			//'select md.DISTRICT_CODE,md.DISTRICT_NAME,ms.STATE_CODE,ms.REGION_CODE,ms.COUNTRY_CODE  from "MDB_DEV"."MST_DISTRICT" as md inner join "MDB_DEV"."MST_STATE" as ms on md.STATE_CODE = ms.STATE_CODE inner join "MDB_DEV"."MST_COUNTRY" as cm on ms.COUNTRY_CODE = cm.COUNTRY_CODE where md.STATE_CODE = ? and md.soft_del = ? ';
 		var pstmt = connection.prepareStatement(query);
 		pstmt.setString(1, StateCode);
-		pstmt.setString(2, '0');
+		//pstmt.setString(2, '0');
 		var rs = pstmt.executeQuery();
 		connection.commit();
 		while (rs.next()) {
@@ -601,7 +652,7 @@ function getStateHierarchy() {
  * @author name : shriyansi
  */
 
-function validateState(){
+/*function validateState(){
 	var record;
 	var Output = {
 		results: []
@@ -649,6 +700,74 @@ function validateState(){
 	$.response.setBody(body);
 	$.response.status = $.net.http.OK;
 	
+}*/
+
+/*
+ * create by
+*/
+function addStates(StateData,record){
+    var connection = $.db.getConnection();
+    for(var i = 0 ; i < StateData.States.length; i++){
+        var state = StateData.States[i];
+    var query = 'insert into  "MDB_DEV"."TRN_REGIONAL"("REGIONAL_CODE","STATE_CODE","ZONE_CODE") values(?,?,?)';
+					var pstmtaddZone = connection.prepareStatement(query);
+					pstmtaddZone.setString(1, StateData.REGIONALCODE);
+					pstmtaddZone.setString(2, state);
+					pstmtaddZone.setString(3, StateData.ZONECODE);
+				//	pstmtaddZone.setString(4, dateFunction());
+					var rs = pstmtaddZone.executeUpdate();
+					connection.commit();
+					if (rs > 0) {
+						record.status = 1;
+						record.messageState = 'Data Uploaded Sucessfully';
+					} else {
+						record.status = 0;
+						record.message = 'Some Issues!';
+					}
+    }
+					connection.close();
+					return;
+}
+function validateState(){
+	var Output = {
+		results: []
+	};
+	var	record = {};
+	var connection = $.db.getConnection();
+	var StateData = $.request.parameters.get('StateData');
+		StateData = JSON.parse(StateData.replace(/\\r/g, ""));
+		StateData = StateData[0];
+		try {
+	    var query = 'insert into  "MDB_DEV"."MST_REGIONAL"("REGIONAL_CODE","REGIONAL_NAME","ZONE_CODE","SOFT_DEL","CREATE_DATE","CREATE_BY") values(?,?,?,?,?,?)';
+					var pstmtaddZone = connection.prepareStatement(query);
+					pstmtaddZone.setString(1, StateData.REGIONALCODE);
+					pstmtaddZone.setString(2, StateData.REGIONALNAME);
+					pstmtaddZone.setString(3, StateData.ZONECODE);
+					pstmtaddZone.setString(4, '0');
+					pstmtaddZone.setString(5, dateFunction());
+					pstmtaddZone.setString(6, StateData.createby);
+					var rs = pstmtaddZone.executeUpdate();
+					connection.commit();
+					if (rs > 0) {
+						record.status = 1;
+						record.Message = 'Data Uploaded Sucessfully';
+						addStates(StateData,record);
+					} else {
+						record.status = 0;
+						record.Message = 'Some Issues!';
+					}
+		
+		Output.results.push(record);
+		connection.close();
+	} catch (e) {
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+	var body = JSON.stringify(Output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
 }
 
 var aCmd = $.request.parameters.get('cmd');
@@ -692,6 +811,9 @@ switch (aCmd) {
 	    break;
 	case "fetchState":
 	    fetchState();
+	    break;
+	case "getRegionalStates":
+	    getRegionalStates();
 	    break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;

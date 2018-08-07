@@ -178,13 +178,22 @@ function getZones() {
 	};
 	var connection = $.db.getConnection();
 	try {
-		var query = 'Select mz.ZONE_CODE ,mz.ZONE_DESC,mz.AREA_CODE,mz.SOFT_DEL ,mz.CREATE_BY,mz.CREATE_DATE, '
+		var query = 
+		' Select mz.ZONE_CODE ,mz.ZONE_DESC,mz.AREA_CODE,mz.SOFT_DEL ,mz.CREATE_BY,mz.CREATE_DATE, '
+    + ' ma.AREA_DESC,md.DISTRICT_NAME,ms.STATE_NAME,mr.REGION_NAME ,tr.REGIONAL_CODE '
+    + ' from "MDB_DEV"."MST_ZONE" as mz '
+    + ' inner join "MDB_DEV"."MST_AREA" as ma on mz.AREA_CODE = ma.AREA_CODE '
+    + ' inner join "MDB_DEV"."MST_DISTRICT" as md on ma.DISTRICT_CODE = md.DISTRICT_CODE '
+    + ' inner join  "MDB_DEV"."TRN_REGIONAL" as tr on md.STATE_CODE = tr.STATE_CODE '
+    + ' inner join "MDB_DEV"."STATESDATA" as ms on tr.STATE_CODE = ms.STATE_CODE '
+    + ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGIONCODE = mr.REGION_CODE';
+	/*	'Select mz.ZONE_CODE ,mz.ZONE_DESC,mz.AREA_CODE,mz.SOFT_DEL ,mz.CREATE_BY,mz.CREATE_DATE, '
 + ' ma.AREA_DESC,md.DISTRICT_NAME,ms.STATE_NAME,mr.REGION_NAME '
 + ' from "MDB_DEV"."MST_ZONE" as mz '
 + ' inner join "MDB_DEV"."MST_AREA" as ma on mz.AREA_CODE = ma.AREA_CODE '
 + ' inner join "MDB_DEV"."MST_DISTRICT" as md on ma.DISTRICT_CODE = md.DISTRICT_CODE '
 + ' inner join "MDB_DEV"."MST_STATE" as ms on md.STATE_CODE = ms.STATE_CODE '
-+ ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGION_CODE = mr.REGION_CODE ';
++ ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGION_CODE = mr.REGION_CODE ';*/
 		var pstmt = connection.prepareStatement(query);
 		var r = pstmt.executeQuery();
 		connection.commit();
@@ -200,6 +209,7 @@ function getZones() {
 			record.District = r.getString(8);
 			record.State = r.getString(9);
 			record.Region = r.getString(10);
+			record.REGIONAL_CODE = r.getString(11);
 			checkStatusDescription(record);
             dateFormat(record);
 					output.results.push(record);

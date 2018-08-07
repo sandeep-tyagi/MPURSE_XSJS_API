@@ -1,0 +1,14 @@
+{
+    "description": "Imei Job",
+    "action": "com.mobistar.sapui5.dev.jobs.imei:uploadImei.xsjs::uploadImei",
+    "schedules": [{
+        "description": "Read current stock value every 30 second",
+           "xscron":"* * * * * */5 30",
+        "parameter": {
+         
+       
+        } 
+    }]
+} 
+
+

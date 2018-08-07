@@ -1,3 +1,6 @@
+/*
+* MODIFIED BY SATISH AFTER POSITION VALUE NAME CHANGE.
+*/
 function getPositionValue() {
 	var output = {
 		results: []
@@ -8,25 +11,25 @@ function getPositionValue() {
 	var Positionvalue = $.request.parameters.get('POSITIONVALUE');
 	try {
 		switch (Positionvalue) {
-			case "BRANCH":
-				query = 'Select COUNTRY_CODE,COUNTRY_NAME from "MDB_DEV"."MST_COUNTRY"';
+			case "SUBAREAURB":
+				query = 'Select COUNTRY_CODE,COUNTRY_NAME from "MDB_DEV"."MST_BRANCH"';
 				break;
 			case "COUNTRY":
 				query = 'Select COUNTRY_CODE,COUNTRY_NAME from "MDB_DEV"."MST_COUNTRY"';
 				break;
-			case "REGION":
+			case "ZONE":
 				query = 'Select REGION_CODE,REGION_NAME from "MDB_DEV"."MST_REGION"';
 				break;
-			case "STATE":
-				query = 'Select STATE_CODE,STATE_NAME from "MDB_DEV"."MST_STATE"';
+			case "REGION":
+				query = 'Select REGIONAL_CODE,REGIONAL_NAME from "MDB_DEV"."MST_REGIONAL"';
 				break;
-			case "DISTRICT":
+			case "BRANCH":
 				query = 'Select DISTRICT_CODE,DISTRICT_NAME from "MDB_DEV"."MST_DISTRICT"';
 				break;
 			case "AREA":
 				query = 'Select AREA_CODE,AREA_NAME from "MDB_DEV"."MST_AREA"';
 				break;
-			case "ZONE":
+			case "SUBAREA":
 				query = 'Select ZONE_CODE,ZONE_DESC from "MDB_DEV"."MST_ZONE"';
 				break;
 			default:

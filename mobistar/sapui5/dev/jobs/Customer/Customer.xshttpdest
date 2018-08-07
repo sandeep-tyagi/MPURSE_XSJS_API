@@ -1,0 +1,24 @@
+host = "202.65.131.37";
+port = 8001;
+pathPrefix = "/sap/opu/odata/sap/ZDMS_MOBI_SRV";
+proxyType = http; 
+authType = basic;
+useProxy = true;
+proxyHost = "proxy";
+proxyPort = 8080;
+timeout = 0;
+remoteSID = "QMS";
+remoteClient = "400";
+
+//host = "202.65.131.37";
+//port = 8001;
+//description = "MobiOdata";
+//pathPrefix = "/sap/opu/odata/sap/ZDMS_MOBI_SRV";
+//proxyType = http; 
+//proxyHost = "proxy"; 
+//proxyPort = 8080;
+//authType = basic;
+//useSSL = false;
+//timeout = 3000;
+//remoteSID = "QMS";
+//remoteClient = "400";

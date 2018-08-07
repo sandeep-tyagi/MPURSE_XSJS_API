@@ -1,3 +1,75 @@
+function getDSTBCustCode() {
+	var output = {
+		results: []
+	};
+	var employeeCode = $.request.parameters.get('employeeCode');
+	var positionValue = $.request.parameters.get('positionValue');
+	var connection = $.db.getConnection();
+	try {
+		var CallProAttribute = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::GetDstbCustCode"(?,?);';
+		var pstmtCallAttribute = connection.prepareCall(CallProAttribute);
+		pstmtCallAttribute.setString(1, employeeCode);
+		pstmtCallAttribute.setString(2, positionValue);
+		pstmtCallAttribute.execute();
+		var rCallAttribute = pstmtCallAttribute.getResultSet();
+		
+		while (rCallAttribute.next()) 
+		{
+			output.results.push(rCallAttribute.getString(1));
+		}
+		connection.commit();
+		connection.close();
+	} catch (e) {
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+function getDSTBCustCodeByName() {
+	var output = {
+		results: []
+	};
+	var employeeCode = $.request.parameters.get('employeeCode');
+	var positionValue = $.request.parameters.get('positionValue');
+	var userType = $.request.parameters.get('userType');
+	var connection = $.db.getConnection();
+	try {
+	    if(userType === "DSTB"){
+	        var query = ' select MC1.DMS_CUST_CODE from "MDB_DEV"."MST_CUSTOMER" as MC inner join "MDB_DEV"."MST_CUSTOMER" as MC1 on MC.DBR_FORM_ID = MC1.CREATE_BY where MC.DMS_CUST_CODE = ?';
+	        //'select DMS_CUST_CODE from "MDB_DEV"."MST_CUSTOMER" where CREATE_BY = ?';
+		var pstmtStatus = connection.prepareStatement(query);
+		pstmtStatus.setString(1, employeeCode);
+		var rCallAttribute = pstmtStatus.executeQuery();
+	    }else{
+		var CallProAttribute = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::GetDstbCustCode"(?,?);';
+		var pstmtCallAttribute = connection.prepareCall(CallProAttribute);
+		pstmtCallAttribute.setString(1, employeeCode);
+		pstmtCallAttribute.setString(2, positionValue);
+		pstmtCallAttribute.execute();
+		var rCallAttribute = pstmtCallAttribute.getResultSet();
+	    }
+		while (rCallAttribute.next()) 
+		{
+		    var record = {};
+		    record.CustCode = rCallAttribute.getString(1);
+			output.results.push(record);
+		}
+		connection.commit();
+		connection.close();
+	} catch (e) {
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
 /*
  * File create by laxmi undar stish sinha.
  *fatch customer behaf of employee code
@@ -112,6 +184,12 @@ switch (aCmd) {
 	case "getEmployeeCustomers":
 		getEmployeeCustomers();
 		break;
+	case "getDSTBCustCode":
+	    getDSTBCustCode();
+	    break;
+	case "getDSTBCustCodeByName":
+	    getDSTBCustCodeByName();
+	    break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;
 		$.response.setBody('Invalid Command');

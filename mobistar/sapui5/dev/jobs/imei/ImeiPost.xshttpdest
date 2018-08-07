@@ -1,0 +1,11 @@
+host = "dev.brightstarservicecrm.in";
+//"mobiistar.net";
+port = 80;
+pathPrefix = "/api/home/postdata";
+useProxy = true;
+//proxyType = http;
+proxyHost = "proxy";
+proxyPort = 8080;
+authType = basic;
+useSSL = false; 
+//sslAuth  = client;

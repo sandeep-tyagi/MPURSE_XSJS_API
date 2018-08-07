@@ -33,7 +33,7 @@ function getStatusDesc(record) {
 	if (record.Status !== undefined && record.Status !== null && record.Status !== '') {
 		var queryStatus = 'select STATUS_CODE,STATUS_DESC from "MDB_DEV"."MST_STATUS" where STATUS_CODE = ?';
 		var pstmtStatus = connection.prepareStatement(queryStatus);
-		pstmtStatus.setInteger(1, record.Status);
+		pstmtStatus.setInteger(1, parseInt(record.Status, 10));
 		var rStatus = pstmtStatus.executeQuery();
 		connection.commit();
 		while (rStatus.next()) {
@@ -58,7 +58,8 @@ function getCustomers() {
 	};
 	var connection = $.db.getConnection();
 	try {
-		var CallProCustomers = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_CUSTOMER"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+		var CallProCustomers =
+			'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_CUSTOMER"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 		var pstmtCustomers = connection.prepareCall(CallProCustomers);
 		pstmtCustomers.setString(1, 'null');
 		pstmtCustomers.setString(2, 'null');
@@ -269,7 +270,8 @@ function addCustomers() {
 				var dicLine = dataLine[i];
 				record = {};
 				record = getGenerateCUSTCode(record);
-				var CallProAddCust = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_CUSTOMER"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
+				var CallProAddCust =
+					'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::MST_CUSTOMER"(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)';
 				var pstmtAddCust = connection.prepareCall(CallProAddCust);
 				pstmtAddCust.setString(1, dicLine.CUST_TYPE);
 				pstmtAddCust.setString(2, record.CustNO);
@@ -331,6 +333,239 @@ function addCustomers() {
 	$.response.setBody(body);
 	$.response.status = $.net.http.OK;
 }
+
+function getApproverdetail() {
+	var connection = $.db.getConnection();
+	var query;
+	var output = {
+		results: []
+	};
+	var AreaCode = $.request.parameters.get('AreaCode');
+	//	var connection = $.db.getConnection();
+	try {
+		query =
+			'select ME.EMPLOYEE_CODE,ME.EMPLOYEE_NAME,MR.ROLE_NAME,MP.POSITION_NAME,ME.POSITION_VALUE_ID from "MDB_DEV"."MST_EMPLOYEE" as ME ' +
+			' inner join "MDB_DEV"."MAP_ROLE_POSITION" as MRP on ME.ROLE_POSITION_ID = MRP.ROLE_POS_ID ' +
+			' inner join "MDB_DEV"."MST_ROLE" as MR on MRP.ROLE_ID = MR.ROLE_ID ' +
+			' inner join "MDB_DEV"."MST_POSITION" as MP on MRP.POSITION_ID = MP.POSITION_ID ' + ' where ME.POSITION_VALUE_ID = ?';
+		var pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, AreaCode);
+		var rGetCustomer = pstmt.executeQuery();
+		connection.commit();
+		while (rGetCustomer.next()) {
+			var record = {};
+			record.POSITION_VALUE_ID = rGetCustomer.getString(5);
+			if (record.POSITION_VALUE_ID === "REGIONALSALESMANAGER") {
+				record.EMPLOYEE_CODE = rGetCustomer.getString(1);
+				record.EMPLOYEE_NAME = rGetCustomer.getString(2);
+				record.ROLE_NAME = rGetCustomer.getString(3);
+				record.POSITION_NAME = rGetCustomer.getString(4);
+				record.POSITION_VALUE_ID = rGetCustomer.getString(5);
+				return;
+			} else {
+				record.EMPLOYEE_CODE = rGetCustomer.getString(1);
+				record.EMPLOYEE_NAME = rGetCustomer.getString(2);
+				record.ROLE_NAME = rGetCustomer.getString(3);
+				record.POSITION_NAME = rGetCustomer.getString(4);
+				record.POSITION_VALUE_ID = rGetCustomer.getString(5);
+			}
+			output.results.push(record);
+		}
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+
+function getApproverDetails(record) {
+	var connection = $.db.getConnection();
+	var query = 'select distinct MR.ROLE_NAME from "MDB_DEV"."MST_EMPLOYEE" as ME ' +
+		' inner join "MDB_DEV"."MAP_ROLE_POSITION" as MRP on ME.ROLE_POSITION_ID = MRP.ROLE_POS_ID ' +
+		' inner join "MDB_DEV"."MST_ROLE" as MR on MRP.ROLE_ID = MR.ROLE_ID where ME.EMPLOYEE_CODE = ?';
+	var pstmt = connection.prepareStatement(query);
+	pstmt.setString(1, record.NXTAPPROVERID);
+	var rGetCustomer = pstmt.executeQuery();
+	connection.commit();
+	if (rGetCustomer.next()) {
+		record.ApproverType = rGetCustomer.getString(1);
+		if (record.Status === '2') {
+			record.ApproverPending = "Pending with " + record.ApproverType;
+		} else if (record.Status === '4') {
+			record.ApproverPending = "Query send by " + record.ApproverType;
+		}
+		/*else if(record.Status === '5'){
+	        record.ApproverPending = "Reject by " + record.ApproverType;
+	    }*/
+	}
+	connection.close();
+}
+
+function filterCustomers(output, data) {
+	var connection = $.db.getConnection();
+	var query, pstmt;
+	if (data.Status === '2' || data.Status === '5' || data.Status === '4') {
+		query =
+			'select distinct CA.DBR_FORM_ID,ME.POSITION_VALUE_ID,MA.AREA_DESC,MD.DISTRICT_NAME,MD.DISTRICT_CODE,MS.STATE_NAME,MS.STATE_CODE,MR.REGIONAL_NAME,MR.REGIONAL_CODE,CA.DBR_FORM_ID,CA.APPROVAL_ID,MR.ZONE_CODE,MZ.REGION_NAME,MC.FIRM_NAME,ME.EMPLOYEE_CODE,ME.EMPLOYEE_NAME,ME.PHONE_NUMBER,UR.PASSWORD  from "MDB_DEV"."CUSTOMER_APPROVAL" as CA ' +
+			' inner join "MDB_DEV"."DBR_PROFILE" as MC on CA.DBR_FORM_ID = MC.DBR_FORM_ID ' +
+			' inner join "MDB_DEV"."MST_EMPLOYEE" as ME on MC.CREATE_BY = ME.EMPLOYEE_CODE  ' +
+			' inner join "MDB_DEV"."MST_AREA" as MA on ME.POSITION_VALUE_ID = MA.AREA_CODE ' +
+			' inner join "MDB_DEV"."MST_DISTRICT" as MD on MA.DISTRICT_CODE = MD.DISTRICT_CODE ' +
+			' inner join "MDB_DEV"."STATESDATA" as MS on MD.STATE_CODE = MS.STATE_CODE ' +
+			' inner join "MDB_DEV"."MST_REGIONAL" as MR on MD.REGIONAL_CODE = MR.REGIONAL_CODE inner join "MDB_DEV"."MST_REGION" as MZ on MR.ZONE_CODE = MZ.REGION_CODE ' +
+	        ' inner join "MDB_DEV"."USER_REGISTRATION" as UR on MC.DBR_FORM_ID = UR.USER_CODE ' +
+			' where CA.status = ? ';
+		pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, data.Status);
+	}
+	if (data.Status === '3') {
+		query =
+			'select distinct CA.DBR_FORM_ID,ME.POSITION_VALUE_ID,MA.AREA_DESC,MD.DISTRICT_NAME,MD.DISTRICT_CODE,MS.STATE_NAME,MS.STATE_CODE,MR.REGIONAL_NAME,MR.REGIONAL_CODE,MC.DMS_CUST_CODE,CA.DBR_FORM_ID,MR.ZONE_CODE,MZ.REGION_NAME,MC.CUST_NAME,ME.EMPLOYEE_CODE,ME.EMPLOYEE_NAME,ME.PHONE_NUMBER,UR.PASSWORD  from "MDB_DEV"."MST_CUSTOMER" as MC ' +
+			' inner join "MDB_DEV"."CUSTOMER_APPROVAL" as CA on MC.DBR_FORM_ID = CA.DBR_FORM_ID' +
+			' inner join "MDB_DEV"."MST_EMPLOYEE" as ME on MC.CREATE_BY = ME.EMPLOYEE_CODE  ' +
+			' inner join "MDB_DEV"."MST_AREA" as MA on ME.POSITION_VALUE_ID = MA.AREA_CODE ' +
+			' inner join "MDB_DEV"."MST_DISTRICT" as MD on MA.DISTRICT_CODE = MD.DISTRICT_CODE ' +
+			' inner join "MDB_DEV"."STATESDATA" as MS on MD.STATE_CODE = MS.STATE_CODE ' +
+			' inner join "MDB_DEV"."MST_REGIONAL" as MR on MD.REGIONAL_CODE = MR.REGIONAL_CODE inner join "MDB_DEV"."MST_REGION" as MZ on MR.ZONE_CODE = MZ.REGION_CODE' +
+			' inner join "MDB_DEV"."USER_REGISTRATION" as UR on MC.DBR_FORM_ID = UR.USER_CODE ' +
+			' where CA.status = ?';
+		pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, data.Status);
+	}
+	if (data.Status === '0') {
+		var statuses = "('0','1')";
+		query = 'select DP.DBR_FORM_ID,DP.FIRM_NAME,DP.EMAIL_ID,DP.STATE,DS.STATUS_NAME,DP.CREATE_BY, ' +
+			' ME.POSITION_VALUE_ID,MA.AREA_DESC,MD.DISTRICT_NAME,MD.DISTRICT_CODE,MS.STATE_NAME,MS.STATE_CODE,MR.REGIONAL_NAME,MR.REGIONAL_CODE,MR.ZONE_CODE,MZ.REGION_NAME,ME.EMPLOYEE_NAME,ME.PHONE_NUMBER,ME.EMAIL,UR.PASSWORD ' +
+			' from "MDB_DEV"."DBR_PROFILE" as DP ' + ' inner join "MDB_DEV"."MST_EMPLOYEE" as ME on DP.CREATE_BY = ME.EMPLOYEE_CODE ' +
+			' inner join "MDB_DEV"."MST_AREA" as MA on ME.POSITION_VALUE_ID = MA.AREA_CODE  ' +
+			' inner join "MDB_DEV"."MST_DISTRICT" as MD on MA.DISTRICT_CODE = MD.DISTRICT_CODE ' +
+			' inner join "MDB_DEV"."STATESDATA" as MS on MD.STATE_CODE = MS.STATE_CODE ' +
+			' inner join "MDB_DEV"."MST_REGIONAL" as MR on MD.REGIONAL_CODE = MR.REGIONAL_CODE inner join "MDB_DEV"."MST_REGION" as MZ on MR.ZONE_CODE = MZ.REGION_CODE' +
+			' inner join "MDB_DEV"."DBST_STATUS" as DS on DP.status = DS.status_code inner join "MDB_DEV"."USER_REGISTRATION" as UR on DP.DBR_FORM_ID=UR.USER_CODE where DP.STATUS in ' + statuses;
+		/*'select DP.DBR_FORM_ID,DP.FIRM_NAME,DP.EMAIL_ID,DP.STATE,DS.STATUS_NAME,DP.CREATE_BY,ME.EMPLOYEE_NAME,ME.PHONE_NUMBER,ME.EMAIL from "MDB_DEV"."DBR_PROFILE" as DP inner join "MDB_DEV"."MST_EMPLOYEE" as ME on DP.CREATE_BY = ME.EMPLOYEE_CODE'
+        + ' inner join "MDB_DEV"."DBST_STATUS" as DS on DP.status = DS.status_code where DP.STATUS in ' + statuses;*/
+		pstmt = connection.prepareStatement(query);
+	}
+	var rGetCustomer = pstmt.executeQuery();
+	connection.commit();
+	while (rGetCustomer.next()) {
+		var record = {};
+		if (data.Status === '0') {
+			record.DBR_FORM_ID = rGetCustomer.getString(1);
+			record.FIRM_NAME = rGetCustomer.getString(2);
+			record.Email = rGetCustomer.getString(3);
+			record.State = rGetCustomer.getString(4);
+			record.status = rGetCustomer.getString(5);
+			record.NXTAPPROVERID = rGetCustomer.getString(6);
+			record.AREA_CODE = rGetCustomer.getString(7);
+			record.AREA_DESC = rGetCustomer.getString(8);
+			record.DISTRICT_DESC = rGetCustomer.getString(9);
+			record.DISTRICT_CODE = rGetCustomer.getString(10);
+			record.STATE_DESC = rGetCustomer.getString(11);
+			record.STATE_CODE = rGetCustomer.getString(12);
+			record.REGION_DESC = rGetCustomer.getString(13);
+			record.REGION_CODE = rGetCustomer.getString(14);
+			record.ZONE_DESC = rGetCustomer.getString(16);
+			record.ZONE_CODE = rGetCustomer.getString(15);
+			record.ApproverName = rGetCustomer.getString(17);
+			record.ApproverNumber = rGetCustomer.getString(18);
+			record.ApproverEmail = rGetCustomer.getString(19);
+			record.Password = rGetCustomer.getString(20);
+		} else {
+			record.DBR_FORM_ID = rGetCustomer.getString(1);
+			record.AREA_CODE = rGetCustomer.getString(2);
+			record.AREA_DESC = rGetCustomer.getString(3);
+			record.DISTRICT_DESC = rGetCustomer.getString(4);
+			record.DISTRICT_CODE = rGetCustomer.getString(5);
+			record.STATE_DESC = rGetCustomer.getString(6);
+			record.STATE_CODE = rGetCustomer.getString(7);
+			record.REGION_DESC = rGetCustomer.getString(8);
+			record.REGION_CODE = rGetCustomer.getString(9);
+			record.DMS_CUST_CODE = rGetCustomer.getString(10);
+			record.ZONE_DESC = rGetCustomer.getString(13);
+			record.ZONE_CODE = rGetCustomer.getString(12);
+			record.FIRM_NAME = rGetCustomer.getString(14);
+			record.ApproverCode = rGetCustomer.getString(15);
+			record.ApproverName = rGetCustomer.getString(16);
+			record.ApproverNumber = rGetCustomer.getString(17);
+			record.Password = rGetCustomer.getString(18);
+			record.Status = data.Status;
+			if (data.Status === '2' || data.Status === '4') {
+				record.NXTAPPROVERID = rGetCustomer.getString(11);
+				getApproverDetails(record);
+			}
+		}
+		output.results.push(record);
+	}
+
+	connection.close();
+}
+
+/*
+ * fetch all customers data including retl and dstb.
+ * @return {results} Array of Customers record
+ * @author shriyansi
+ */
+
+function ViewCustomers() {
+	var output = {
+		results: []
+	};
+	var data = {};
+	data.StatusType = $.request.parameters.get('Status');
+	//	var connection = $.db.getConnection();
+	try {
+		if (data.StatusType === "Pending") {
+			data.Status = '2';
+		} else if (data.StatusType === "Reject") {
+			data.Status = '5';
+		} else if (data.StatusType === "Query") {
+			data.Status = '4';
+		} else if (data.StatusType === "Approve") {
+			data.Status = '3';
+		} else if (data.StatusType === "Save as Draft") {
+			data.Status = '0';
+		}
+		filterCustomers(output, data);
+		/*var queryGetCustomer = 'select  c.CUST_TYPE , c.FIRM_NAME ,  c.PARENT_CUST_NAME ,s.country_code,c.state, c.CITY_DISTRICT,c.POSTAL_CODE' +
+			',c.EMAIL_ID, c.SOFT_DEL from "MDB_DEV"."MST_CUSTOMER" as c inner join "MDB_DEV"."MST_STATE" as s on  s.state_name=c.state';
+		var pstmtGetCustomer = connection.prepareStatement(queryGetCustomer);
+		var rGetCustomer = pstmtGetCustomer.executeQuery();
+		connection.commit();
+		while (rGetCustomer.next()) {
+			var record = {};
+			record.CUST_TYPE = rGetCustomer.getString(1);
+			record.CUST_NAME = rGetCustomer.getString(2);
+			record.PARENT_CUST_NAME = rGetCustomer.getString(3);
+			record.COUNTRY = rGetCustomer.getString(4);
+			record.STATE = rGetCustomer.getString(5);
+			record.CITY_DISTRICT = rGetCustomer.getString(6);
+			record.PHONE_NUMBER = rGetCustomer.getInteger(7);
+			record.EMAIL_ID = rGetCustomer.getString(8);
+			record.Status = rGetCustomer.getString(9);
+			getStatusDesc(record);
+			output.results.push(record);
+		}
+
+		connection.close();*/
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
 var aCmd = $.request.parameters.get('cmd');
 switch (aCmd) {
 	case "addMSTCUSTOMER":
@@ -341,6 +576,12 @@ switch (aCmd) {
 		break;
 	case "getCustomer":
 		getCustomer();
+		break;
+	case "ViewCustomers":
+		ViewCustomers();
+		break;
+	case "getApproverdetail":
+		getApproverdetail();
 		break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;

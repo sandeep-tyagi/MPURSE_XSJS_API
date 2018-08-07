@@ -154,7 +154,7 @@
 
  	try {
  		var queryInvEquiPost =
- 			'insert into "MDB_DEV"."EQUIPMENT_MASTER" ("SERIAL_NUMBER","MATERIAL_CODE","INVOICE_NO","IMEI1", ' +
+ 			'insert into "MDB_DEV"."MST_EQUIPMENT" ("SERIAL_NUMBER","MATERIAL_CODE","INVOICE_NO","IMEI1", ' +
  			' "BATCH_NO", "PLANT_CODE","CREATED_BY") ' + ' values (?,?,?,?,?,?,?)';
  		var pstmtInvEquiPost = connection.prepareStatement(queryInvEquiPost);
  		pstmtInvEquiPost.setString(1, dict.SerialNo);
@@ -187,7 +187,7 @@
  	var InvEquiUpdateRecord = {};
  	try {
  		var queryInvEquiPost =
- 			'insert into "MDB_DEV"."EQUIPMENT_MASTERTRANS" ("SERIAL_NO","MATERIAL_CODE","IMEI1","SAPUSER_ID", ' +
+ 			'insert into "MDB_DEV"."TRN_EQUIPMENT_MASTER" ("SERIAL_NO","MATERIAL_CODE","IMEI1","SAPUSER_ID", ' +
  			' "INVOICE_NO","INVOICELINE_NO","BATCH_NO", "PLANT_CODE","CREATED_BY" ,"ACTIVE") ' + ' values (?,?,?,?,?,?,?,?,?,?)';
  		var pstmtInvEquiPost = connection.prepareStatement(queryInvEquiPost);
  		pstmtInvEquiPost.setString(1, dict.SerialNo);
@@ -226,12 +226,12 @@
  	var Output = [];
  	var connection = $.db.getConnection();
  	try {
- 		var queryselect = ' select SERIAL_NUMBER from "MDB_DEV"."EQUIPMENT_MASTER" where SERIAL_NUMBER = ? ';
+ 		var queryselect = ' select SERIAL_NUMBER from "MDB_DEV"."MST_EQUIPMENT" where SERIAL_NUMBER = ? ';
  		var pstmtSelect = connection.prepareStatement(queryselect);
  		pstmtSelect.setString(1, dict.SerialNo);
  		var rsSelect = pstmtSelect.executeQuery();
  		connection.commit();
- 		if (rsSelect > 0) {
+ 		if (rsSelect.next()) {
  			record.status = 1;
  			record.message = 'IMEI already Present ';
  		} else {
@@ -258,19 +258,19 @@
  	try {
  		var queryInvEquiPost =
  			'insert into "MDB_DEV"."SALES_INVOICE_EQUIP" ("INVOICE_NO","INVOICE_LINE_NO","MATERIAL_CODE","SERIAL_NO","IMEI1", ' +
- 			' "SAPUSER_ID","BATCH_NO", "PLANT_CODE","QUANTITY","CREATE_DBY") ' + ' values (?,?,?,?,?,?,?,?,?,?)';
+ 			'"IMEI2", "SAPUSER_ID","BATCH_NO", "PLANT_CODE","QUANTITY","CREATE_DBY") ' + ' values (?,?,?,?,?,?,?,?,?,?,?)';
  		var pstmtInvEquiPost = connection.prepareStatement(queryInvEquiPost);
  		pstmtInvEquiPost.setString(1, dict.InvoiceNo);
  		pstmtInvEquiPost.setString(2, dict.LineNo);
  		pstmtInvEquiPost.setString(3, dict.ItemCode);
  		pstmtInvEquiPost.setString(4, dict.SerialNo);
  		pstmtInvEquiPost.setString(5, dict.ImeiNo1);
- 		/*	pstmtInvEquiPost.setString(6, dict.ImeiNo2);*/
- 		pstmtInvEquiPost.setString(6, dict.DealerCode);
- 		pstmtInvEquiPost.setString(7, dict.BatchNo);
- 		pstmtInvEquiPost.setString(8, dict.PlantCode);
- 		pstmtInvEquiPost.setString(9, dict.ItemQty);
- 		pstmtInvEquiPost.setString(10, "ManualJob");
+ 		pstmtInvEquiPost.setString(6, dict.ImeiNo2);
+ 		pstmtInvEquiPost.setString(7, dict.DealerCode);
+ 		pstmtInvEquiPost.setString(8, dict.BatchNo);
+ 		pstmtInvEquiPost.setString(9, dict.PlantCode);
+ 		pstmtInvEquiPost.setString(10, dict.ItemQty);
+ 		pstmtInvEquiPost.setString(11, "ManualJob");
  		var rsInvEquiPost = pstmtInvEquiPost.executeUpdate();
  		connection.commit();
  		if (rsInvEquiPost > 0) {

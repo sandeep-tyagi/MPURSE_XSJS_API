@@ -129,20 +129,47 @@ function getEmpAuthDetail(record, output) {
 	connection.close();
 }
 
+function getUserType(userId,userType){
+    var connection = $.db.getConnection();
+    var query = 'select EMPLOYEE_CODE from "MDB_DEV"."MST_EMPLOYEE" where EMPLOYEE_CODE=?';
+			var pstmt = connection.prepareStatement(query);
+			pstmt.setString(1, userId);
+			var rs = pstmt.executeQuery();
+			connection.commit();
+			if (rs.next() > 0) {
+			    userType = "Employee";
+			} else {
+				userType = "Customer";
+			}
+			connection.close();
+			return userType;
+}
+
 function getUserConfiguration() {
 	var output = {
 		navigation: []
 	};
-	var record = {};
+	var record = {},userType = "";
 	var userId = $.request.parameters.get('userId');
 	var menuName = $.request.parameters.get('menuName');
+	userType = getUserType(userId,userType);
+	var CallPro,pstmtCallPro;
 	var connection = $.db.getConnection();
 	try {
-		var CallPro = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::UserAuthDetail"(?,?,?)';
-		var pstmtCallPro = connection.prepareCall(CallPro);
+	    if(userType === "Employee"){
+	        CallPro = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::UserAuthDetail"(?,?,?)';
+		pstmtCallPro = connection.prepareCall(CallPro);
 		pstmtCallPro.setString(1, userId);
 		pstmtCallPro.setString(2, menuName);
 		pstmtCallPro.setString(3, 'UserConfiguration');
+	    }
+	    else if(userType === "Customer"){
+	        CallPro = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::UserAuthDetail"(?,?,?)';
+		pstmtCallPro = connection.prepareCall(CallPro);
+		pstmtCallPro.setString(1, userId);
+		pstmtCallPro.setString(2, menuName);
+		pstmtCallPro.setString(3, 'UserConfigurationCustomer');
+	    }
 		pstmtCallPro.execute();
 		var rCallPro = pstmtCallPro.getResultSet();
 		connection.commit();
@@ -242,12 +269,30 @@ function getUserConfigurationAttribute() {
 	$.response.status = $.net.http.OK;
 }
 
+function checkCustomerAvailability(record) {
+	var connection = $.db.getConnection();
+	var query =
+		'select DP.DBR_FORM_ID from "MDB_DEV"."DBR_PROFILE" as DP inner join "MDB_DEV"."MST_CUSTOMER" as MC on DP.DBR_FORM_ID = MC.DBR_FORM_ID where DP.DBR_FORM_ID = ?';
+	var pstmt = connection.prepareStatement(query);
+	pstmt.setString(1, record.USER_CODE);
+	var rs = pstmt.executeQuery();
+	connection.commit();
+	if (rs.next() > 0) {
+		record.CustAvailable = true;
+	} else {
+		record.CustAvailable = false;
+	}
+	connection.close();
+	return;
+}
+
 function getAuthTiles(record, output) {
 	var connection = $.db.getConnection();
 	var TileArr = [];
 	var records = {};
 	var GUID = 1;
 	if (record.USER_TYPE === 'DSTB') {
+		checkCustomerAvailability(record);
 		var CallPro = 'call "MDB_DEV"."com.mobistar.sapui5.dev.procedure::UserAuthDetail"(?,?,?)';
 		var pstmtCallPro = connection.prepareCall(CallPro);
 		pstmtCallPro.setString(1, record.USER_TYPE);
@@ -269,7 +314,11 @@ function getAuthTiles(record, output) {
 			records.TILE_TYPE = rCallPro.getString(8);
 			records.pres = rCallPro.getString(9);
 			records.PRESS = "this." + records.pres + "()";
-			TileArr.push(records);
+			if (record.CustAvailable === true) {
+				TileArr.push(records);
+			} else if ((record.CustAvailable === false) && (records.pres === "OnPressdbr")) {
+				TileArr.push(records);
+			}
 		}
 		record.Tiles = TileArr;
 		output.results.push(record);
@@ -306,27 +355,62 @@ function getAuthTiles(record, output) {
 	}
 }
 
+function getCustDmsCode(record){
+     var connection = $.db.getConnection();
+    //record.CustName = "";
+    if(record.USER_CODE !== null){
+    var query = 'select DMS_CUST_CODE from "MDB_DEV"."MST_CUSTOMER" where DBR_FORM_ID = ?';
+    	var pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, record.USER_CODE);
+        var rs = pstmt.executeQuery();
+		connection.commit();
+			if(rs.next()) {
+			    record.DMS_CUST_CODE = rs.getString(1);
+			}
+    }		
+    connection.close();
+			return record;
+}
+function getEmployeeRolePosition(record){
+    var connection = $.db.getConnection();
+    if(record.USER_CODE !== null){
+    var query = ' select ME.POSITION_VALUE_ID ,MP.POSITION_NAME from "MDB_DEV"."MST_EMPLOYEE" as ME '
+  + ' inner join "MDB_DEV"."MAP_ROLE_POSITION" as MRP on ME.ROLE_POSITION_ID = MRP.ROLE_POS_ID '
+   + ' inner join "MDB_DEV"."MST_POSITION" as MP on MRP.POSITION_ID = MP.POSITION_ID where ME.EMPLOYEE_CODE = ?';
+    	var pstmt = connection.prepareStatement(query);
+		pstmt.setString(1, record.USER_CODE);
+        var rs = pstmt.executeQuery();
+		connection.commit();
+			if(rs.next()) {
+			    record.RolePositionValue = rs.getString(1);
+			    record.POSITION_NAME = rs.getString(2);
+			}
+    }		
+    connection.close();
+	return record;
+}
+
 function getUserAndPassword() {
 	var output = {
 		results: []
 	};
 	var conn = $.db.getConnection();
 	var loginDictarray = $.request.parameters.get('loginArray');
-	var loginDict =  JSON.parse(loginDictarray);
+	var loginDict = JSON.parse(loginDictarray);
 
 	try {
 		var query = 'select * from "MDB_DEV"."USER_REGISTRATION" where USER_CODE=? and PASSWORD=?';
 		var pstmt = conn.prepareStatement(query);
 		pstmt.setString(1, loginDict.UserId);
-		pstmt.setString(2,loginDict.Pass);
+		pstmt.setString(2, loginDict.Pass);
 		var rs = pstmt.executeQuery();
 		conn.commit();
 		if (rs.next()) {
 			var record = {};
-			record.USER_CODE = rs.getString(1);
+			record.USER_CODE = rs.getString(1).trim();
 			record.PASSWORD = rs.getString(2);
-			record.LOGIN_NAME = rs.getString(3);
-			record.USER_TYPE = rs.getString(4);
+			record.LOGIN_NAME = rs.getString(3).trim();
+			record.USER_TYPE = rs.getString(4).trim();
 			record.LEVEL_ID = rs.getInteger(5);
 			record.POSITION_ID = rs.getInteger(6);
 			record.STATUS = rs.getString(7);
@@ -337,6 +421,11 @@ function getUserAndPassword() {
 			record.MODIFIED_BY = rs.getString(12);
 			record.MODIFIED_DATE = rs.getString(13);
 			record.status = '1';
+			if(record.USER_TYPE === "DSTB"){
+			    getCustDmsCode(record);
+			}else{
+			    getEmployeeRolePosition(record);
+			}
 			getAuthTiles(record, output);
 			/*if (record.USER_TYPE === 'Employee') {
 			getEmpAuthDetail(record, output);
@@ -345,6 +434,60 @@ function getUserAndPassword() {
 			record = {};
 			record.message = "Please enter correct User Id and Password.";
 			record.status = '0';
+			output.results.push(record);
+		}
+		conn.close();
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+function currentDate() {
+	var dp = new Date();
+	var monthp = '' + (dp.getMonth() + 1);
+	var dayp = '' + dp.getDate();
+	var yearp = dp.getFullYear();
+
+	if (monthp.length < 2) monthp = '0' + monthp;
+	if (dayp.length < 2) dayp = '0' + dayp;
+
+	var yyyymmddp = dayp + '.' + monthp + '.' + yearp;
+	return yyyymmddp;
+}
+
+function passwordChange() {
+	var output = {
+		results: []
+	};
+	var conn = $.db.getConnection();
+	var loginDictarray = $.request.parameters.get('loginArray');
+	var loginDict = JSON.parse(loginDictarray);
+
+	try {
+		var query = 'UPDATE  "MDB_DEV"."USER_REGISTRATION" SET PASSWORD=? , MODIFIED_BY=? , MODIFIED_DATE=?  where USER_CODE=?';
+		var pstmt = conn.prepareStatement(query);
+		pstmt.setString(1, loginDict.Pass);
+		pstmt.setString(2, loginDict.UserId);
+		pstmt.setString(3, currentDate());
+		pstmt.setString(4, loginDict.UserId);
+		var rs = pstmt.executeUpdate();
+		conn.commit();
+		if (rs > 0) {
+			var record = {};
+			record.message = "PASSWORD SUCCESSFULLY UPDATED..";
+			record.status = '0';
+			output.results.push(record);
+		} else {
+			record = {};
+			record.message = "Please enter correct User Id and Password.";
+			record.status = '1';
 			output.results.push(record);
 		}
 		conn.close();
@@ -514,6 +657,9 @@ switch (aCmd) {
 	case "changePassword":
 		changePassword();
 		break;
+	case "passwordChange":
+	    passwordChange();
+	    break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;
 		$.response.setBody('Invalid Command');

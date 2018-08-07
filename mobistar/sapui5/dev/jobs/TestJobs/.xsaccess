@@ -11,8 +11,7 @@
     "prevent_xsrf": false,
     "anonymous_connection": null,
     "cors": [{
-        "enabled": false,
-        "allowMethods": ["GET","POST","DELETE","PUT"]
+        "enabled": false
     }],
     "cache_control": "no-cache, no-store",
     "default_file": "index.html"

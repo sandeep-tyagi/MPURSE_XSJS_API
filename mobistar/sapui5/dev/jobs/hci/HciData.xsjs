@@ -1,34 +1,3 @@
-
-function getIMEIDestination(records) {
-	var dest = $.net.http.readDestination("com.mobistar.sapui5.dev.jobs.imei", "Imei");
-	var client = new $.net.http.Client();
-	var req = new $.net.http.Request($.net.http.POST, "");
-
-	req.contentType = "application/json";
-
-	req.setBody(JSON.stringify(records));
-	client.request(req, dest);
-	var response = client.getResponse();
-	records.data = JSON.parse(response.body.asString());
-	//return data;
-}
-
-
-function getInvoiceDestination(records) {
-	var dest = $.net.http.readDestination("com.mobistar.sapui5.dev.jobs.hci", "Invoice");
-	var client = new $.net.http.Client();
-	//var req = new $.net.http.Request($.net.http.POST,"");
-	var req = new $.web.WebRequest($.net.http.POST, "");
-	
-	req.contentType = "application/json";
-	req.setBody(JSON.stringify(records));
-	client.request(req, dest);
-	var response = client.getResponse();
-	records.data = response.body.asString();
-	
-	var test = '0';
-}
-
 /*
  * postInvoiceHeader is use for insert SAP Invoice Header data into HANA DB
  * create by laxmi
@@ -167,22 +136,11 @@ function postInvoiceLine() {
  * create by laxmi
  */
 function postInvoiceEquipment() {
-    var  data;
-   var records = {};
-	
-	records.EndDate = "2018-06-03";
-	records.EndTime = "00:00:00";
-	records.StartDate = "2018-03-01";
-	records.StartTime = "00:00:00";
-	//records.push(requestInvoiceBody);
-
-    
-    getInvoiceDestination(records, data);
 	var Output = [];
 	var connection = $.db.getConnection();
 	var InvEquiUpdateRecord = {};
-	//var InvEquiInput = $.request.body.asString();
-	var InvEquiInput = records.data;
+	var InvEquiInput = $.request.body.asString();
+	InvEquiInput = JSON.parse(InvEquiInput);
 	try {
 		for (var i = 0; i < InvEquiInput.result.length; i++) {
 			var InvEquiData = InvEquiInput.result[i];
@@ -221,56 +179,14 @@ function postInvoiceEquipment() {
 		$.response.setBody(e.message);
 		return;
 	}
-	var body = JSON.stringify(request.data);
+	var body = JSON.stringify(messages);
 	$.response.contentType = 'application/json';
-	$.response.setBody(request.data);
+	$.response.setBody(body);
 	$.response.status = $.net.http.OK;
-}
-
-function HCIJobs(){
-    var datas = {
-        record : {}
-    };
-    var records = {};
-	records.EndDate = "2018-06-03";
-	records.EndTime = "00:00:00";
-	records.StartDate = "2018-03-01";
-	records.StartTime = "00:00:00";
-	datas.record = records;
-	
-    try{ var destination; var client;
-
-destination = $.net.http.readDestination("com.mobistar.sapui5.dev.jobs.hci", "Invoice");
-
-client = new $.net.http.Client();
-
-var request = new $.net.http.Request($.net.http.POST,"/salesInvoiceEquipments");
-
-request.headers.set("Content-Type" , "application/json");
-
-request.headers.set("Accept" , "application/json");
-
-request.setBody(JSON.stringify(datas));
-
-client.request(request, destination);
-
-var response = client.getResponse();
-
-var body = response.body.asString();
-$.response.setBody(JSON.stringify( {
-
-"Success": client.getResponse().status} ));
-
-}
-
-catch(e){ $.response.status = $.net.http.INTERNAL_SERVER_ERROR; $.response.setBody(e.message ); }
 }
 
 var aCmd = $.request.parameters.get('cmd');
 switch (aCmd) {
-    case "HCIJobs":
-        HCIJobs();
-        break;
 	case "postInvoiceHeader":
 		postInvoiceHeader();
 		break;

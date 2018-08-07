@@ -1,0 +1,9 @@
+host = "l550002-iflmap.hcisbp.ae1.hana.ondemand.com";
+port = 80;
+pathPrefix = "/http/customerdatafetch";
+proxyType = http;
+proxyHost = "proxy";
+proxyPort = 8080;
+authType = basic;
+useSSL = false;
+sslHostCheck = false;

@@ -1,0 +1,8 @@
+host = "http://mobiistar.net";
+port = 80;
+pathPrefix = "/api/v1/sapdms/Imei";
+useProxy = true;
+proxyHost = "proxy";
+proxyPort = 8080;
+authType = none;
+useSSL = false; 

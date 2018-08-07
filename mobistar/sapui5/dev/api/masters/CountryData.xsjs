@@ -5,7 +5,7 @@ function getAllCountryData(){
 	output.results.push({});
 	var connection = $.db.getConnection();
 	try {
-		var queryGetAllCountry = 'SELECT * FROM "MDB_DEV"."COUNTRIESDATA" ' ;
+		var queryGetAllCountry = 'SELECT * FROM "MDB_DEV"."COUNTRIESDATA" ';
 		var pstmtGetAllCountry = connection.prepareStatement(queryGetAllCountry);
 		var rGetAllCountry = pstmtGetAllCountry.executeQuery();
 		connection.commit();
@@ -92,15 +92,17 @@ function getAllStateData(){
 	var output = {
 		results: []
 	};
-	output.results.push({});
+	//output.results.push({});
 	var countryCode =  $.request.parameters.get('countryCode');
+	var ZoneCode =  $.request.parameters.get('ZoneCode');
 	var connection = $.db.getConnection();
 	try {
 		var queryGetAllState = 'SELECT s.STATE_NAME, s.STATE_CODE ,s.COUNTRYCODE, r.REGIONCODE , r.REGIONNAME FROM  "MDB_DEV"."STATESDATA" as s inner join "MDB_DEV"."REGIONSDATA" as r on s.REGIONCODE= r.REGIONCODE '
-	+ ' inner join "MDB_DEV"."MST_REGION" as mr on s.REGIONCODE = mr.REGION_CODE where mr.COUNTRY_CODE = s.COUNTRYCODE and mr.SOFT_DEL =  ? and s.COUNTRYCODE = ? ' ;
+	+ ' inner join "MDB_DEV"."MST_REGION" as mr on s.REGIONCODE = mr.REGION_CODE where mr.COUNTRY_CODE = s.COUNTRYCODE and mr.SOFT_DEL =  ? and s.COUNTRYCODE = ? and s.REGIONCODE = ?' ;
 		var pstmtGetAllState = connection.prepareStatement(queryGetAllState);
 		pstmtGetAllState.setString(1,'0');
 		pstmtGetAllState.setString(2,countryCode);
+		pstmtGetAllState.setString(3,ZoneCode);
 		var rGetAllState = pstmtGetAllState.executeQuery();
 		connection.commit();
 		while (rGetAllState.next()) {
@@ -135,12 +137,13 @@ function getAllDistrictData(){
 	var stateCode = $.request.parameters.get('StateCode');
 	try {
 		var queryGetAllDistrict = ' SELECT dd.DISTRICT_CODE,dd.DISTRICT_NAME,dd.STATE_CODE FROM "MDB_DEV"."DISTRICT_DATA" as dd ' 
-+ ' inner join "MDB_DEV"."MST_STATE" as ms on dd.STATE_CODE = ms.STATE_CODE '
-+ ' where ms.SOFT_DEL = ? and dd.STATE_CODE = ?';
++ '  inner join "MDB_DEV"."TRN_REGIONAL" as ms on dd.STATE_CODE = ms.STATE_CODE '
+//inner join "MDB_DEV"."MST_STATE" as ms on dd.STATE_CODE = ms.STATE_CODE '
++ ' where dd.STATE_CODE = ?';
 		//'SELECT * FROM "MDB_DEV"."DISTRICT_DATA"  where STATE_CODE = ? ';
 		var pstmtGetAllDistrict = connection.prepareStatement(queryGetAllDistrict);
-		pstmtGetAllDistrict.setString(1, '0');
-		pstmtGetAllDistrict.setString(2, stateCode);
+	//	pstmtGetAllDistrict.setString(1, '0');
+		pstmtGetAllDistrict.setString(1, stateCode);
 		var rGetAllDistrict = pstmtGetAllDistrict.executeQuery();
 		connection.commit();
 		while (rGetAllDistrict.next()) {
@@ -166,6 +169,7 @@ function getAllDistrictData(){
 }
 
 	var aCmd = $.request.parameters.get('cmd');
+	
     switch (aCmd) {
     case "getAllCountryData":
         getAllCountryData();

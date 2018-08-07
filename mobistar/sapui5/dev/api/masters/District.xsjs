@@ -31,6 +31,43 @@ function dateFunction() {
     }
     return record;
 }
+function getSelectedStateDistrict(){
+    	var output = {
+		results: []
+	};
+	//output.results.push({});
+	var connection = $.db.getConnection();
+	var stateCode = $.request.parameters.get('StateCode');
+	try {
+		var queryGetAllDistrict = 'SELECT dd.DISTRICT_CODE,dd.DISTRICT_NAME,dd.STATE_CODE FROM "MDB_DEV"."DISTRICT_DATA" as dd where dd.STATE_CODE = ? and dd.DISTRICT_CODE not in (select DISTRICT_CODE from "MDB_DEV"."MST_DISTRICT" where state_code = ?)';
+	/*	' SELECT dd.DISTRICT_CODE,dd.DISTRICT_NAME,dd.STATE_CODE FROM "MDB_DEV"."DISTRICT_DATA" as dd ' 
++ '  inner join "MDB_DEV"."TRN_REGIONAL" as ms on dd.STATE_CODE = ms.STATE_CODE '
++ ' where dd.STATE_CODE = ? ';*/
+		var pstmtGetAllDistrict = connection.prepareStatement(queryGetAllDistrict);
+		pstmtGetAllDistrict.setString(1, stateCode);
+		pstmtGetAllDistrict.setString(2, stateCode);
+		var rGetAllDistrict = pstmtGetAllDistrict.executeQuery();
+		connection.commit();
+		while (rGetAllDistrict.next()) {
+			var record = {};
+			record.DISTRICT_CODE = rGetAllDistrict.getString(1);
+			record.DISTRICT_NAME = rGetAllDistrict.getString(2);
+			record.STATE_CODE = rGetAllDistrict.getString(3);
+			output.results.push(record);
+		}
+		connection.close();
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
 
 /**
  * This is a DateFunction() return particular Date Formate.
@@ -192,11 +229,23 @@ function getDistricts() {
 	var connection = $.db.getConnection();
 	try {
 		var QuerygetDistricts =
-			'select md.SOFT_DEL , md.CREATE_BY ,md.CREATE_DATE ,md.DISTRICT_CODE,md.DISTRICT_NAME, '
+		/*	'select md.SOFT_DEL , md.CREATE_BY ,md.CREATE_DATE ,md.DISTRICT_CODE,md.DISTRICT_NAME, '
 			+ ' ms.STATE_CODE,ms.STATE_NAME,ms.REGION_CODE,mr.REGION_NAME,ms.COUNTRY_CODE  from "MDB_DEV"."MST_DISTRICT" as md  '
 			+ ' inner join "MDB_DEV"."MST_STATE" as ms on md.STATE_CODE = ms.STATE_CODE '
 			+ ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGION_CODE = mr.REGION_CODE '
-			+ ' inner join  "MDB_DEV"."MST_COUNTRY" as cm on ms.COUNTRY_CODE = cm.COUNTRY_CODE ';
+			+ ' inner join  "MDB_DEV"."MST_COUNTRY" as cm on ms.COUNTRY_CODE = cm.COUNTRY_CODE ';*/
+		/*	'select md.SOFT_DEL , md.CREATE_BY ,md.CREATE_DATE ,md.DISTRICT_CODE,md.DISTRICT_NAME, '
+        + ' ms.STATE_CODE,ms.STATE_NAME,ms.REGIONCODE,mr.REGION_NAME,ms.COUNTRYCODE,tr.regional_code  from "MDB_DEV"."MST_DISTRICT" as md '
+        + ' inner join  "MDB_DEV"."TRN_REGIONAL" as tr on md.STATE_CODE = tr.STATE_CODE '
+        + ' inner join "MDB_DEV"."STATESDATA" as ms on tr.STATE_CODE = ms.STATE_CODE '
+        + ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGIONCODE = mr.REGION_CODE ';*/
+        'select MD.SOFT_DEL , MD.CREATE_BY ,MD.CREATE_DATE ,MD.DISTRICT_CODE,MD.DISTRICT_NAME,' 
+ + ' ms.STATE_CODE,ms.STATE_NAME,MR.REGION_CODE,MR.REGION_NAME,MR.COUNTRY_CODE,TR.regional_code ' 
+ + ' from "MDB_DEV"."MST_DISTRICT" as MD' 
+ + ' inner join  "MDB_DEV"."MST_REGIONAL" as TR on md.REGIONAL_CODE = tr.REGIONAL_CODE'  
+ + ' Inner join "MDB_DEV"."STATESDATA" as ms on MD.STATE_CODE = ms.STATE_CODE' 
+ + ' inner join "MDB_DEV"."MST_REGION" as MR on TR.ZONE_CODE = mr.REGION_CODE' ;
+			
 		var pstmtgetDistricts = connection.prepareStatement(QuerygetDistricts);
 		var rsgetDistricts = pstmtgetDistricts.executeQuery();
 		connection.commit();
@@ -209,12 +258,54 @@ function getDistricts() {
 			record.RegionCode = rsgetDistricts.getString(8);
 			record.RegionName = rsgetDistricts.getString(9);
 			record.CountryCode = rsgetDistricts.getString(10);
+			record.REGIONAL_CODE = rsgetDistricts.getString(11);
 			record.SOFT_DEL = rsgetDistricts.getString(1);
 			record.CreatedBy = rsgetDistricts.getString(2);
 			record.CREATE_DATE = rsgetDistricts.getString(3);
 			
+			
 			checkStatusDescription(record);
             dateFormat(record);
+			output.results.push(record);
+		}
+
+		connection.close();
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+
+/**
+ * get behalfs of regionals get states
+*/
+
+function getRegionalStates(){
+    var regionalCode = $.request.parameters.get('regionalCode');
+    	var output = {
+		results: []
+	};
+	output.results.push({});
+	var connection = $.db.getConnection();
+	var pstmtState = '';
+	var queryState = '';
+	try {
+		queryState = 'select ST.STATE_CODE,ST.STATE_NAME from "MDB_DEV"."TRN_REGIONAL" as TR inner join "MDB_DEV"."STATESDATA" as ST on TR.STATE_CODE = ST.STATE_CODE where TR.REGIONAL_CODE = ?';
+		//'SELECT REGIONAL_CODE,REGIONAL_NAME FROM "MDB_DEV"."MST_REGIONAL" ';
+		pstmtState = connection.prepareStatement(queryState);
+		pstmtState.setString(1,regionalCode);
+		var rsState = pstmtState.executeQuery();
+		while (rsState.next()) {
+			var record = {};
+			record.StateCode = rsState.getString(1);
+			record.StateName = rsState.getString(2);
 			output.results.push(record);
 		}
 
@@ -331,14 +422,87 @@ function addDistrict() {
 			var rAddEmp = pstmtCalladdDistrict.executeUpdate();
 				if (rAddEmp > 0) {
 					record.status = 1;
-					record.message = 'Data Uploaded Sucessfully';
+					record.Message = 'Data Uploaded Sucessfully';
 				} else {
 					record.status = 0;
-					record.message = 'Some Issues!';
+					record.Message = 'Some Issues!';
 				}
 			connection.commit();
 		}
 		Output.results.push(record);
+		connection.close();
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+	var body = JSON.stringify(Output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+function addDistrict1() {
+
+	var record;
+	var Output = {
+		results: [],
+		alreadyExist:[],
+		failed :[]
+	};
+
+	var connection = $.db.getConnection();
+	var districtCodeObject = $.request.parameters.get('districtCode');
+	districtCodeObject = JSON.parse(districtCodeObject.replace(/\\r/g, ""));
+//	var districtName = $.request.parameters.get('districtName');
+//	var stateCode = $.request.parameters.get('stateCode');
+//	var countryCode = $.request.parameters.get('countryCode');
+   // var createby = $.request.parameters.get('createby');
+    var distictCodeDistrict = districtCodeObject.DCode;
+	try {
+	    for(var i =0 ; i <distictCodeDistrict.length; i++){
+	        var districtCodeDistrictData = distictCodeDistrict[i];
+	    
+		record = {};
+		var qryDistName = 'select DISTRICT_NAME from "MDB_DEV"."DISTRICT_DATA" where DISTRICT_CODE=?';
+		var paramDistName = connection.prepareStatement(qryDistName);
+        paramDistName.setString(1, districtCodeDistrictData);
+		var rsDistName = paramDistName.executeQuery();
+		if (rsDistName.next()) {
+			record.DistrictName = rsDistName.getString(1);
+		} 
+		var queryselect = 'select * from "MDB_DEV"."MST_DISTRICT" where STATE_CODE=? and DISTRICT_CODE=?';
+		var paramSelect = connection.prepareStatement(queryselect);
+		paramSelect.setString(1, districtCodeObject.DState);
+        paramSelect.setString(2, districtCodeDistrictData);
+		var rsSelect = paramSelect.executeQuery();
+		if (rsSelect.next()) {
+			//record.status = 0;
+			record.Message = "Record  Already  inserted for district [" + record.DistrictName + "]";
+		    Output.alreadyExist.push(record);	
+		} else {
+			var CalladdDistrict = 'insert into  "MDB_DEV"."MST_DISTRICT"("DISTRICT_CODE","DISTRICT_NAME","STATE_CODE","CREATE_BY","REGIONAL_CODE") values(?,?,?,?,?)';
+			var pstmtCalladdDistrict = connection.prepareStatement(CalladdDistrict);
+			pstmtCalladdDistrict.setString(1, districtCodeDistrictData);
+			pstmtCalladdDistrict.setString(2, record.DistrictName);
+			pstmtCalladdDistrict.setString(3, districtCodeObject.DState);
+			pstmtCalladdDistrict.setString(4, districtCodeObject.createby);
+			pstmtCalladdDistrict.setString(5, districtCodeObject.regionalCode);
+		//	pstmtCalladdDistrict.execute();
+			var rAddEmp = pstmtCalladdDistrict.executeUpdate();
+				if (rAddEmp > 0) {
+					//record.status = 1;
+					record.message = 'Data Uploaded Sucessfully for district [' + record.DistrictName + ']';
+					Output.results.push(record);
+				} else {
+					record.status = 0;
+					record.message = 'Some Issues for district[' + record.DistrictName + ']!!!';
+					Output.failed.push(record);
+				}
+			connection.commit();
+		}
+		
+	    }
 		connection.close();
 	} catch (e) {
 
@@ -504,6 +668,15 @@ switch (aCmd) {
 	 case "getDistrictHierarchy":
 	     getDistrictHierarchy();
 	     break;
+	 case "getRegionalStates":
+	     getRegionalStates();
+	     break;
+	 case "addDistrict1":
+		addDistrict1();
+		break;
+	case "getSelectedStateDistrict":
+	    getSelectedStateDistrict();
+	    break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;
 		$.response.setBody('Invalid Command');

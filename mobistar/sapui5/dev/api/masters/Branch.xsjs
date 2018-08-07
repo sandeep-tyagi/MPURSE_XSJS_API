@@ -167,14 +167,24 @@ function getBranchs() {
 	};
 	var connection = $.db.getConnection();
 	try {
-		var queryBranch = 'Select mb.BRANCH_CODE ,mb.BRANCH_DESC,mb.ZONE_CODE ,mb.SOFT_DEL ,mb.CREATE_BY,mb.CREATE_DATE, '
+		var queryBranch = 
+		'Select mb.BRANCH_CODE ,mb.BRANCH_DESC,mb.ZONE_CODE ,mb.SOFT_DEL ,mb.CREATE_BY,mb.CREATE_DATE, '
+ + ' mz.ZONE_DESC,ma.AREA_DESC,md.DISTRICT_NAME,ms.STATE_NAME,mr.REGION_NAME ,tr.REGIONAL_CODE '
+ + ' from "MDB_DEV"."MST_BRANCH" as mb '
++ ' inner join "MDB_DEV"."MST_ZONE" as mz on mb.ZONE_CODE = mz.ZONE_CODE '
++ ' inner join "MDB_DEV"."MST_AREA" as ma on mz.AREA_CODE = ma.AREA_CODE '
++ ' inner join "MDB_DEV"."MST_DISTRICT" as md on ma.DISTRICT_CODE = md.DISTRICT_CODE ' 
++ ' inner join  "MDB_DEV"."TRN_REGIONAL" as tr on md.STATE_CODE = tr.STATE_CODE '
++ ' inner join "MDB_DEV"."STATESDATA" as ms on tr.STATE_CODE = ms.STATE_CODE '
++ ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGIONCODE = mr.REGION_CODE ';
+		/*'Select mb.BRANCH_CODE ,mb.BRANCH_DESC,mb.ZONE_CODE ,mb.SOFT_DEL ,mb.CREATE_BY,mb.CREATE_DATE, '
 + ' mz.ZONE_DESC,ma.AREA_DESC,md.DISTRICT_NAME,ms.STATE_NAME,mr.REGION_NAME '
 + ' from "MDB_DEV"."MST_BRANCH" as mb '
 + ' inner join "MDB_DEV"."MST_ZONE" as mz on mb.ZONE_CODE = mz.ZONE_CODE '
 + ' inner join "MDB_DEV"."MST_AREA" as ma on mz.AREA_CODE = ma.AREA_CODE '
 + ' inner join "MDB_DEV"."MST_DISTRICT" as md on ma.DISTRICT_CODE = md.DISTRICT_CODE '
 + ' inner join "MDB_DEV"."MST_STATE" as ms on md.STATE_CODE = ms.STATE_CODE '
-+ ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGION_CODE = mr.REGION_CODE ';
++ ' inner join "MDB_DEV"."MST_REGION" as mr on ms.REGION_CODE = mr.REGION_CODE ';*/
 		var pstmtBranch = connection.prepareStatement(queryBranch);
 		var rsBranch = pstmtBranch.executeQuery();
 		connection.commit();
@@ -191,6 +201,7 @@ function getBranchs() {
 			record.District = rsBranch.getString(9);
 			record.State = rsBranch.getString(10);
 			record.Region = rsBranch.getString(11);
+			record.REGIONAL_CODE = rsBranch.getString(12);
 			checkStatusDescription(record);
             dateFormat(record);
 			output.results.push(record);

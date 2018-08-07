@@ -251,6 +251,43 @@ function getRegion() {
 }
 
 /**
+ * To fetch region behalf of country code.
+ * @returns {output} Array of resultset.
+ * @author laxmi.
+ */
+function getCountryRegional() {
+	var output = {
+		results: []
+	};
+	var connection = $.db.getConnection();
+	var pstmtState = '';
+	var queryState = '';
+	try {
+		queryState = 'SELECT REGIONAL_CODE,REGIONAL_NAME FROM "MDB_DEV"."MST_REGIONAL" ';
+		pstmtState = connection.prepareStatement(queryState);
+		var rsState = pstmtState.executeQuery();
+		while (rsState.next()) {
+			var record = {};
+			record.RegionalCode = rsState.getString(1);
+			record.RegionalName = rsState.getString(2);
+			output.results.push(record);
+		}
+
+		connection.close();
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+
+	var body = JSON.stringify(output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
+
+/**
  * To insert region into region master
  * @returns {output} Array of resultset..
  */
@@ -592,6 +629,9 @@ switch (aCmd) {
 	case "fetchRegion":
 	    fetchRegion();
 	     break;
+	case "getCountryRegional":
+	    getCountryRegional();
+	    break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;
 		$.response.setBody('Invalid Command');
