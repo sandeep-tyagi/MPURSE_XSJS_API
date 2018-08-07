@@ -1,7 +1,7 @@
 {
     "exposed": true,
     "authentication": null ,
-
+"anonymous_connection":"PackageName::Anonymous_Access",
     "mime_mapping": [{
         "extension": "jpg",
         "mimetype": "image/jpeg"
@@ -11,7 +11,8 @@
     "prevent_xsrf": false,
     "anonymous_connection": null,
     "cors": [{
-        "enabled": false
+        "enabled": false,
+        "allowMethods": ["GET","POST","DELETE","PUT"]
     }],
     "cache_control": "no-cache, no-store",
     "default_file": "index.html"
