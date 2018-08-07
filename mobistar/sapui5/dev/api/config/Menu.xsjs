@@ -264,7 +264,7 @@ function updateMenu() {
 
 	try {
 		queryMenuUpdate =
-			'UPDATE "MDB_DEV"."MST_MENU" SET MENU_NAME=?,ORDER_NO=?,URL=?,HEADER=?,SUB_HEADER=?,FRAME_TYPE=?,HEADER_IMAGE=?,FOOTER=?,TILE_TYPE=?,PRESS=?,SOFT_DEL=?,MODIFIED_DATE=?,MODIFIED_BY=? where MENU_ID=?';
+			'UPDATE "MDB_DEV"."MST_MENU" SET MENU_NAME=?,ORDER_NO=?,URL=?,HEADER=?,SUB_HEADER=?,FRAME_TYPE=?,HEADER_IMAGE=?,FOOTER=?,TILE_TYPE=?,PRESS=?,MODIFIED_DATE=?,MODIFIED_BY=? where MENU_ID=?';
 		var pstmtMenuUpdate = conn.prepareStatement(queryMenuUpdate);
 		
 		pstmtMenuUpdate.setString(1, inputData.editMenuNAME);
@@ -277,10 +277,10 @@ function updateMenu() {
 		pstmtMenuUpdate.setString(8, inputData.editFooter);
 		pstmtMenuUpdate.setString(9, inputData.editTileType);
 		pstmtMenuUpdate.setString(10, inputData.editPress);
-		pstmtMenuUpdate.setInteger(11, parseInt(inputData.editStatus, 10));
-		pstmtMenuUpdate.setString(12, dateFunction());
-		pstmtMenuUpdate.setString(13, inputData.modifyby);
-		pstmtMenuUpdate.setInteger(14, parseInt(inputData.editMenuID, 10));
+	/*	pstmtMenuUpdate.setInteger(11, parseInt(inputData.editStatus, 10));*/
+		pstmtMenuUpdate.setString(11, dateFunction());
+		pstmtMenuUpdate.setString(12, inputData.modifyby);
+		pstmtMenuUpdate.setInteger(13, parseInt(inputData.editMenuID, 10));
 
 		/*	pstmtUpdCallPro.setInteger(1, parseInt(menuIdEditMenu, 10));
 		pstmtUpdCallPro.setString(2, menuNameEditMenu);

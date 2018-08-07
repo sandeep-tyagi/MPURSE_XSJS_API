@@ -175,6 +175,53 @@ function addMapRolePosAttr() {
 	$.response.status = $.net.http.OK;
 }
 
+
+function deleteMapRolePosAttri() {
+
+	var record;
+	var Output = {
+		results: []
+	};
+	var connection = $.db.getConnection();
+	var datasLine = $.request.parameters.get('LineData');
+	var dataLine = JSON.parse(datasLine.replace(/\\r/g, ""));
+
+	try {
+		if (dataLine.length > 0) {
+			for (var i = 0; i < dataLine.length; i++) {
+				var dicLine = dataLine[i];
+				record = {};
+					var qryDeleteRoleAtt = 'Delete from "MDB_DEV"."MAP_ROLE_POS_ATTR" where ATTRIBUTE_ID = ? and ROLE_POS_ID = ? and SUB_MENU_ID = ?';
+				/*	ROLE_POS_ID = ? and SUB_MENU_ID in ' +
+			                        '(select SUBMENU_ID from "MDB_DEV"."MST_SUB_MENU" where MENU_ID = ?)';*/
+		    	var pstmtDeleteRoleAtt = connection.prepareStatement(qryDeleteRoleAtt);
+			pstmtDeleteRoleAtt.setInteger(1, parseInt(dicLine.ID, 10));
+					pstmtDeleteRoleAtt.setInteger(2, parseInt(dicLine.ROLE_LOC_ID, 10));
+					pstmtDeleteRoleAtt.setInteger(3, parseInt(dicLine.SUBID, 10));
+				var rsDeleteRoleAtt = pstmtDeleteRoleAtt.executeQuery();
+				connection.commit();
+					if (rsDeleteRoleAtt) {
+						record.status = 1;
+						record.message = 'Data deleted Sucessfully';
+					} else {
+						record.status = 0;
+						record.message = 'Some Issues!';
+					}
+			}
+			Output.results.push(record);
+			connection.close();
+		}
+	} catch (e) {
+
+		$.response.status = $.net.http.INTERNAL_SERVER_ERROR;
+		$.response.setBody(e.message);
+		return;
+	}
+	var body = JSON.stringify(Output);
+	$.response.contentType = 'application/json';
+	$.response.setBody(body);
+	$.response.status = $.net.http.OK;
+}
 /*
  * To get matching record of Role position attribute map.
  * @Param {Integer} rSubMenu as SubMenuId,rAttr as AttributeId.
@@ -319,6 +366,9 @@ switch (aCmd) {
 	case "getSubMenuRolePositionAttr":
 		getSubMenuRolePositionAttr();
 		break;
+	case "deleteMapRolePosAttri":
+	    deleteMapRolePosAttri();
+	    break;
 	default:
 		$.response.status = $.net.http.BAD_REQUEST;
 		$.response.setBody('Invalid Command');

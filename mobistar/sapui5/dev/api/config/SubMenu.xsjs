@@ -259,19 +259,19 @@
  	var submenuOrderNo = $.request.parameters.get('submenuOrderNo');
  	var submenuKey = $.request.parameters.get('submenuKey');
  	var submenuIcon = $.request.parameters.get('submenuIcon');
- 	var submenuStatus = $.request.parameters.get('submenuStatus');
+ /*	var submenuStatus = $.request.parameters.get('submenuStatus');*/
 var modifyby = $.request.parameters.get('modifyby');
  	try {
- 		var qryUpdateSubMenu = 'update "MDB_DEV"."MST_SUB_MENU" set SUB_MENU_NAME=? ,ORDER_NO=?, KEY=?, ICON=?, SOFT_DEL=?,MODIFIED_BY=?,MODIFIED_DATE=? where SUBMENU_ID=?';
+ 		var qryUpdateSubMenu = 'update "MDB_DEV"."MST_SUB_MENU" set SUB_MENU_NAME=? ,ORDER_NO=?, KEY=?, ICON=?,MODIFIED_BY=?,MODIFIED_DATE=? where SUBMENU_ID=?';
  		var pstmtUpdateSubMenu = conn.prepareCall(qryUpdateSubMenu);
  		pstmtUpdateSubMenu.setString(1, submenuName);
- 		pstmtUpdateSubMenu.setInteger(2, parseInt(submenuOrderNo, 10));
+ 		pstmtUpdateSubMenu.setString(2, submenuOrderNo);//parseInt(submenuOrderNo, 10));
  		pstmtUpdateSubMenu.setString(3, submenuKey);
  		pstmtUpdateSubMenu.setString(4, submenuIcon);
- 		pstmtUpdateSubMenu.setString(5, submenuStatus);
- 		pstmtUpdateSubMenu.setString(6, modifyby);
-		pstmtUpdateSubMenu.setString(7, dateFunction());
- 		pstmtUpdateSubMenu.setInteger(8, parseInt(SUBMENU_ID, 10));
+ 	/*	pstmtUpdateSubMenu.setString(5, submenuStatus);*/
+ 		pstmtUpdateSubMenu.setString(5, modifyby);
+		pstmtUpdateSubMenu.setString(6, dateFunction());
+ 		pstmtUpdateSubMenu.setInteger(7, parseInt(SUBMENU_ID, 10));
  		/*	pstmtUpdateSubMenu.setInteger(6, 0);
 		pstmtUpdateSubMenu.setString(7, 'ADMIN');
 		pstmtUpdateSubMenu.setString(8, dateFunction());

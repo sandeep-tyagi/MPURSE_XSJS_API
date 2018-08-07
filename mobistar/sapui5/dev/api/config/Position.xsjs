@@ -300,14 +300,14 @@ function addPosition(inputData, connection, record) {
  	} else {
 
  		try {
- 			var qryUpdatePosition = 'UPDATE "MDB_DEV"."MST_POSITION" SET POSITION_NAME = ?,MODIFIED_DATE=?, SOFT_DEL=?,MODIFIED_BY=? where POSITION_ID= ?';
+ 			var qryUpdatePosition = 'UPDATE "MDB_DEV"."MST_POSITION" SET POSITION_NAME = ?,MODIFIED_DATE=?,MODIFIED_BY=? where POSITION_ID= ?';
  			var pstmtUpdatePosition = connection.prepareStatement(qryUpdatePosition);
  			pstmtUpdatePosition.setString(1, positionNameEditPosition);
  			pstmtUpdatePosition.setString(2, dateFunction());
- 			pstmtUpdatePosition.setString(3, positionStatusEditPosition);
- 			pstmtUpdatePosition.setString(4, modifyby);
+ 		/*	pstmtUpdatePosition.setString(3, positionStatusEditPosition);*/
+ 			pstmtUpdatePosition.setString(3, modifyby);
  		//	pstmtUpdatePosition.setString(5, dateFunction());
- 			pstmtUpdatePosition.setInteger(5, parseInt(positionIdUpdatePosition, 10));
+ 			pstmtUpdatePosition.setInteger(4, parseInt(positionIdUpdatePosition, 10));
  			var rsUpdatePosition = pstmtUpdatePosition.executeUpdate();
  			connection.commit();
 
